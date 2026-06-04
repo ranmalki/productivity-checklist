@@ -16,3 +16,6 @@ git push
 ```
 
 The production URL updates on its own within seconds.
+
+<!-- Auto-deploy connected and verified. -->
+
