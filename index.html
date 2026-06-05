@@ -13,12 +13,12 @@
   --purple:#7c3aed; --purple-deep:#5b21b6; --purple-soft:#8b3dff;
   --cyan:#0a9fc4; --cyan-bright:#15c7e8;
   --magenta:#e0307f; --lime:#3aa83a; --lime-bright:#7ce04a; --orange:#e8771a;
-  --card:rgba(255,255,255,0.70);
-  --card-2:rgba(255,255,255,0.50);
+  --card:rgba(255,255,255,0.48);
+  --card-2:rgba(255,255,255,0.30);
   --hud:#1c1638;
   --line:rgba(124,58,237,0.28);
   --line-soft:rgba(36,26,68,0.12);
-  --glass:rgba(255,255,255,0.66);
+  --glass:rgba(255,255,255,0.42);
   --pxsh:4px 4px 0 rgba(124,58,237,0.16), 0 4px 14px rgba(20,12,40,0.22);
   --r:20px;
 }
@@ -76,7 +76,7 @@ main{flex:1;padding:14px 14px 6px}
 
 
 .card{background:var(--card);border:2px solid var(--line);border-radius:var(--r);box-shadow:var(--pxsh);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:15px;margin-bottom:14px;position:relative}
+  backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);padding:15px;margin-bottom:14px;position:relative}
 .ctitle{font-family:'Heebo';font-weight:800;font-size:16px;color:var(--ink);margin:0 0 12px;display:flex;align-items:center;gap:8px}
 .ctitle .pip{width:10px;height:10px;background:var(--purple);box-shadow:2px 2px 0 rgba(124,58,237,.3)}
 .sub{font-family:'Heebo';font-size:12.5px;color:var(--ink-dim);margin:0 0 12px;line-height:1.5}
@@ -281,13 +281,17 @@ nav button.on{color:var(--purple)}
 .setrow:last-child{border-bottom:none}
 .hint{font-family:'Heebo';font-size:11px;color:var(--ink-faint);text-align:center;margin-top:14px;line-height:1.5}
 /* ===== TITLE POLISH ===== */
-.brand{gap:11px}
-.brand .cbadge{background:linear-gradient(150deg,var(--cyan-bright),var(--lime));animation:bbob 3.2s ease-in-out infinite}
+.brand{gap:13px}
+.brand .cbadge{width:46px;height:46px;border-radius:14px;background:linear-gradient(150deg,var(--cyan-bright),var(--lime));animation:bbob 3.2s ease-in-out infinite;box-shadow:4px 4px 0 rgba(10,159,196,.4)}
+.brand .cbadge svg{width:25px;height:25px}
 @keyframes bbob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-2px) rotate(1.5deg)}}
-.brand .ttxt{transform:rotate(-2deg);transform-origin:right center;padding:3px 0;line-height:.92}
-.brand .t1{font-family:'Permanent Marker',cursive;font-weight:400;font-size:12px;letter-spacing:1px;color:var(--orange);text-shadow:1.5px 1.5px 0 var(--hud);margin-bottom:-3px;transform:rotate(1deg)}
-.brand .t2{position:relative;display:inline-block;font-family:'Permanent Marker',cursive;font-weight:400;font-size:33px;letter-spacing:1px;color:var(--cyan-bright);-webkit-text-stroke:3px var(--hud);paint-order:stroke fill;text-shadow:4px 5px 0 var(--hud),5px 6px 0 rgba(124,222,74,.55)}
-.brand .t2::after{content:"";position:absolute;width:6px;height:12px;background:var(--cyan-bright);border-radius:0 0 4px 4px;left:14%;bottom:-6px;box-shadow:0 0 0 2.5px var(--hud);animation:tdrip 4.5s ease-in-out infinite}
+.brand .ttxt{transform:rotate(-2deg);transform-origin:right center;padding:4px 0;line-height:.9}
+.brand .t1{font-family:'Permanent Marker',cursive;font-weight:400;font-size:14px;letter-spacing:2px;color:var(--orange);text-shadow:1.5px 1.5px 0 var(--hud);margin-bottom:-2px;transform:rotate(1deg)}
+.brand .t2{position:relative;display:inline-block;font-family:'Permanent Marker',cursive;font-weight:400;font-size:46px;letter-spacing:1px;
+  background:linear-gradient(115deg,var(--cyan-bright) 0%,var(--lime-bright) 55%,var(--orange) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--cyan-bright);
+  -webkit-text-stroke:3px var(--hud);paint-order:stroke fill;
+  filter:drop-shadow(4px 5px 0 var(--hud)) drop-shadow(5px 7px 0 rgba(124,222,74,.5))}
+.brand .t2::after{content:"";position:absolute;width:7px;height:15px;background:var(--lime-bright);border-radius:0 0 4px 4px;left:14%;bottom:-7px;box-shadow:0 0 0 3px var(--hud);animation:tdrip 4.5s ease-in-out infinite}
 @keyframes tdrip{0%,62%,100%{transform:translateY(0);opacity:.95}82%{transform:translateY(3px);opacity:1}}
 
 /* ===== LEVEL-UP CELEBRATION ===== */
@@ -912,7 +916,7 @@ const COLORS=['#7c3aed','#0a9fc4','#e0307f','#3aa83a','#e8771a','#5a63d8'];
 
 /* ===== CONFIG ===== */
 const EXP_PER_LEVEL=80;
-const RANKS=[{n:'מתחיל',l:1},{n:'בתנועה',l:5},{n:'בפוקוס',l:10},{n:'יציב',l:15},{n:'יוצר',l:20},{n:'מתקדם',l:25},{n:'חזק בקצב',l:30}];
+const RANKS=[{n:'מתחיל',l:1},{n:'ניצן',l:3},{n:'בתנועה',l:5},{n:'מתעורר',l:8},{n:'בפוקוס',l:10},{n:'מתמיד',l:13},{n:'יציב',l:15},{n:'נחוש',l:18},{n:'יוצר',l:20},{n:'ממוקד',l:23},{n:'מתקדם',l:25},{n:'מנוסה',l:28},{n:'חזק בקצב',l:30},{n:'אלוף הרגלים',l:35},{n:'מקצוען',l:40},{n:'וירטואוז',l:45},{n:'אמן הפוקוס',l:50},{n:'מאסטר',l:60},{n:'גיבור על',l:70},{n:'בלתי ניתן לעצירה',l:80},{n:'אגדה',l:90},{n:'אגדה חיה',l:100}];
 const WIN_CHIPS=['קמתי','אכלתי משהו','יצאתי החוצה','שתיתי מים','נגעתי בכלי','עניתי להודעה','התקלחתי','עשיתי משהו אחד'];
 const DEFAULT_TASKS=[
   {id:'t1',title:'טיול בוקר עם פונצ׳ו',cat:'today',exp:30,tag:'בריאות',tagColor:'#3aa83a',icon:'paw',quick:false},
