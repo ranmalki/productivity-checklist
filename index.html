@@ -1290,9 +1290,9 @@ const FIFTH_CFG={key:'fifthsMod',container:'fifthsPath',color:'#e0307f',title:'�
  ]
 };
 /* ---- guitar-neck engine ---- */
-const CHROM_HE=['דו','דו#','רה','רה#','מי','פה','פה#','סול','סול#','לה','לה#','סי'];
+const CHROM_EN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const GTUNING=[{open:4},{open:11},{open:7},{open:2},{open:9},{open:4}]; // string 1(high E)..6(low E), C=0
-const gNote=(s,f)=>CHROM_HE[(GTUNING[s].open+f)%12];
+const gNote=(s,f)=>CHROM_EN[(GTUNING[s].open+f)%12];
 const G_LEFT=28,G_FW=33,G_SS=20,G_TOP=15;
 function fretboardSVG(markS,markF,labels,frets){
   frets=frets||12;
@@ -1304,12 +1304,12 @@ function fretboardSVG(markS,markF,labels,frets){
   [3,5,7,9].forEach(k=>{if(k<=frets){const x=G_LEFT+(k-0.5)*G_FW;s+=`<circle cx="${x}" cy="${G_TOP+2.5*G_SS}" r="3.5" fill="#d3cae9"/>`;}});
   if(frets>=12){const x=G_LEFT+(12-0.5)*G_FW;s+=`<circle cx="${x}" cy="${G_TOP+1.5*G_SS}" r="3.5" fill="#d3cae9"/><circle cx="${x}" cy="${G_TOP+3.5*G_SS}" r="3.5" fill="#d3cae9"/>`;}
   for(let k=1;k<=frets;k++){const x=G_LEFT+(k-0.5)*G_FW;s+=`<text x="${x}" y="${H-3}" class="fnum">${k}</text>`;}
-  if(labels){for(let st=0;st<6;st++)for(let f=0;f<=frets;f++){const x=f===0?G_LEFT-13:G_LEFT+(f-0.5)*G_FW,y=G_TOP+st*G_SS,nat=gNote(st,f).length===2;s+=`<circle cx="${x}" cy="${y}" r="8.5" fill="${nat?'#7c3aed':'#e8771a'}"/><text x="${x}" y="${y+3.2}" class="gnote">${gNote(st,f)}</text>`;}}
+  if(labels){for(let st=0;st<6;st++)for(let f=0;f<=frets;f++){const x=f===0?G_LEFT-13:G_LEFT+(f-0.5)*G_FW,y=G_TOP+st*G_SS,nat=!gNote(st,f).includes('#');s+=`<circle cx="${x}" cy="${y}" r="8.5" fill="${nat?'#7c3aed':'#e8771a'}"/><text x="${x}" y="${y+3.2}" class="gnote">${gNote(st,f)}</text>`;}}
   if(markS!=null){const x=markF===0?G_LEFT-13:G_LEFT+(markF-0.5)*G_FW,y=G_TOP+markS*G_SS;s+=`<circle cx="${x}" cy="${y}" r="11" fill="#e0307f" stroke="#fff" stroke-width="2.5"/><text x="${x}" y="${y+5}" class="gmark">?</text>`;}
   return s+`</svg>`;
 }
 const fretboardRef=()=>`<div class="fbscroll">${fretboardSVG(null,null,true,12)}</div>`;
-function guitarQ(spec){const s=pick(spec.strings),f=pick(spec.frets),note=gNote(s,f),drawF=Math.min(12,Math.max(3,Math.max(...spec.frets))),opts=uniqueOptions(note,CHROM_HE,4);return{stage:`<div class="fbscroll">${fretboardSVG(s,f,false,drawF)}</div>`,prompt:'איזה תו מסומן?',options:opts,correct:opts.indexOf(note),explain:`מיתר ${s+1}, סריג ${f} = ${note}`};}
+function guitarQ(spec){const s=pick(spec.strings),f=pick(spec.frets),note=gNote(s,f),drawF=Math.min(12,Math.max(3,Math.max(...spec.frets))),opts=uniqueOptions(note,CHROM_EN,4);return{stage:`<div class="fbscroll">${fretboardSVG(s,f,false,drawF)}</div>`,prompt:'איזה תו מסומן?',options:opts,correct:opts.indexOf(note),explain:`מיתר ${s+1}, סריג ${f} = ${note}`};}
 const GUITAR_CFG={key:'guitarMod',container:'trainBody',color:'#e8771a',title:'גריף הגיטרה',
  sub:'זיהוי התווים על הגריף — כל המיתרים והסריגים.',
  freeSub:'מבחן אינסופי על הגריף. 3 לבבות, הדירוג לפי כמות הנכונות.',
