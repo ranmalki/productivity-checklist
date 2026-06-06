@@ -282,7 +282,11 @@ nav button.on{color:var(--purple)}
 .hint{font-family:'Heebo';font-size:11px;color:var(--ink-faint);text-align:center;margin-top:14px;line-height:1.5}
 /* ===== TITLE POLISH ===== */
 .brand{gap:13px}
-.brand .cbadge{width:46px;height:46px;border-radius:14px;background:linear-gradient(150deg,var(--cyan-bright),var(--lime));animation:bbob 3.2s ease-in-out infinite;box-shadow:4px 4px 0 rgba(10,159,196,.4)}
+.brand .cbadge{width:62px;height:62px;border-radius:13px;border:3px solid #fff;
+  background:linear-gradient(160deg,#3a2a6e 0%,#241a44 55%,#15121f 100%);
+  box-shadow:inset 0 0 0 2px rgba(124,222,74,.35),4px 5px 0 rgba(10,12,30,.45),0 0 0 1px var(--hud);
+  image-rendering:pixelated;animation:bbob 3.2s ease-in-out infinite;overflow:hidden}
+.brand .cbadge .pxs i{box-shadow:none}
 .brand .cbadge svg{width:25px;height:25px}
 @keyframes bbob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-2px) rotate(1.5deg)}}
 .brand .ttxt{transform:rotate(-2deg);transform-origin:right center;padding:4px 0;line-height:.9}
@@ -535,7 +539,7 @@ nav button span{font-size:8px;white-space:nowrap;letter-spacing:-.3px}
         </button>
       </div>
       <div class="brand">
-        <div class="cbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="cbadge" id="logoBadge"></div>
         <div class="ttxt"><span class="t1">RAN'S</span><span class="t2">HUB</span></div>
       </div>
     </div>
@@ -1171,6 +1175,26 @@ const modInLevel=xp=>xp%MOD_PER;
 /* ---- pixel sprite + level-up celebration ---- */
 function pixelArt(pattern,unit,palette){let h='';pattern.forEach((row,y)=>{[...row].forEach((ch,x)=>{if(ch!=='.')h+=`<i style="left:${x*unit}px;top:${y*unit}px;width:${unit}px;height:${unit}px;background:${palette[ch]||'#fff'}"></i>`;});});return `<div class="pxs" style="width:${pattern[0].length*unit}px;height:${pattern.length*unit}px">${h}</div>`;}
 const ARROW_SPR=['..#..','.###.','#####','#.#.#','..#..','..#..'];
+/* retro RPG hero sword logo */
+const LOGO_SPR=[
+".....KK.....",
+"....KWBK....",
+"....KWbK....",
+"....KWbK....",
+"....KWbK....",
+"....KWbK....",
+"....KWbK....",
+"....KBbK....",
+"..KGGGGGGK..",
+".KKgGGGGgKK.",
+"...KRRRRK...",
+"...KRrrRK...",
+"...KRRRRK...",
+"...KPPPPK...",
+"...KPWPPK...",
+"....KKKK...."];
+const LOGO_PAL={'K':'#15121f','W':'#ffffff','B':'#cfe3f2','b':'#7f97b0','G':'#ffd166','g':'#d98a2b','R':'#8a5a2a','r':'#5e3a18','P':'#e0307f'};
+function renderLogo(){const el=document.getElementById('logoBadge');if(el)el.innerHTML=pixelArt(LOGO_SPR,3,LOGO_PAL);}
 function sndLevelUp(){beep([523,659,784,1047,1319],0.13,'square',0.06);setTimeout(()=>beep([1568,2093],0.2,'triangle',0.04),360);}
 function sndRankUp(){beep([392,523,659,784,1047,1319,1568],0.12,'sawtooth',0.06);setTimeout(()=>beep([2093,2637],0.22,'triangle',0.045),430);}
 let luTimer=null;
@@ -1562,6 +1586,7 @@ document.getElementById('aiClear').onclick=()=>{if(confirm('לנקות את כל
 document.getElementById('aiModal').addEventListener('click',e=>{if(e.target.id==='aiModal')e.currentTarget.classList.remove('on');});
 
 renderWinChips();
+renderLogo();
 renderAll();
 setInterval(()=>{if(S.day!==todayStr()){rollover();renderAll();}},30000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.day!==todayStr()){rollover();renderAll();}});
