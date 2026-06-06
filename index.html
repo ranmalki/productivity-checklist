@@ -281,7 +281,7 @@ nav button.on{color:var(--purple)}
 .setrow:last-child{border-bottom:none}
 .hint{font-family:'Heebo';font-size:11px;color:var(--ink-faint);text-align:center;margin-top:14px;line-height:1.5}
 /* ===== TITLE POLISH ===== */
-.brand{gap:13px}
+.brand{gap:12px;flex:1;min-width:0}
 .brand .cbadge{width:62px;height:62px;border-radius:13px;border:3px solid #fff;
   background:linear-gradient(160deg,#3a2a6e 0%,#241a44 55%,#15121f 100%);
   box-shadow:inset 0 0 0 2px rgba(124,222,74,.35),4px 5px 0 rgba(10,12,30,.45),0 0 0 1px var(--hud);
@@ -289,13 +289,18 @@ nav button.on{color:var(--purple)}
 .brand .cbadge .pxs i{box-shadow:none}
 .brand .cbadge svg{width:25px;height:25px}
 @keyframes bbob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-2px) rotate(1.5deg)}}
-.brand .ttxt{transform:none;padding:2px 0;line-height:1}
-.brand .t1{font-family:'Press Start 2P',monospace;font-weight:400;font-size:8px;letter-spacing:2px;color:var(--orange);
-  text-shadow:-1px -1px 0 var(--hud),1px -1px 0 var(--hud),-1px 1px 0 var(--hud),1px 1px 0 var(--hud),2px 2px 0 rgba(0,0,0,.3);margin-bottom:7px}
-.brand .t2{position:relative;display:inline-block;font-family:'Press Start 2P',monospace;font-weight:400;font-size:28px;letter-spacing:2px;
-  color:var(--cyan-bright);
-  text-shadow:-1.5px -1.5px 0 var(--hud),1.5px -1.5px 0 var(--hud),-1.5px 1.5px 0 var(--hud),1.5px 1.5px 0 var(--hud),3px 3px 0 var(--magenta),4px 4px 0 var(--purple),6px 6px 0 var(--hud)}
-.brand .t2::after{display:none}
+.brand .ttxt{flex:1;min-width:0;display:flex;flex-direction:column;align-items:stretch;padding:2px 0;line-height:1}
+.brand .t1{display:block;width:100%;text-align:center;white-space:nowrap;
+  font-family:'Press Start 2P',monospace;font-weight:400;font-size:clamp(26px,9.5vw,46px);letter-spacing:1px;
+  background:linear-gradient(180deg,#fff1c4 0%,#ffd76a 30%,#f7a823 60%,#d2620e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#f7a823;
+  -webkit-text-stroke:2.5px #3a1d07;paint-order:stroke fill;
+  filter:drop-shadow(3px 3px 0 #2a1505) drop-shadow(0 0 7px rgba(255,170,40,.5));margin-bottom:7px}
+.brand .t2{display:block;width:100%;text-align:center;font-family:'Press Start 2P',monospace;font-weight:400;font-size:clamp(9px,3vw,13px);letter-spacing:4px;color:#fff;
+  background:linear-gradient(180deg,#f04646,#c01a1a);border:2px solid #6e0e0e;border-radius:4px;padding:6px 8px;
+  box-shadow:3px 3px 0 rgba(40,6,6,.5),inset 0 2px 0 rgba(255,255,255,.18);
+  text-shadow:-1px -1px 0 #6e0e0e,1px -1px 0 #6e0e0e,-1px 1px 0 #6e0e0e,1px 1px 0 #6e0e0e,2px 2px 0 rgba(0,0,0,.35)}
+.brand .t2::before{content:"\00AB ";color:#ffd166;-webkit-text-stroke:0}
+.brand .t2::after{content:" \00BB";display:inline;color:#ffd166;position:static;width:auto;height:auto;background:none;box-shadow:none;animation:none;border-radius:0}
 @keyframes tdrip{0%,62%,100%{transform:translateY(0);opacity:.95}82%{transform:translateY(3px);opacity:1}}
 
 /* ===== LEVEL-UP CELEBRATION ===== */
