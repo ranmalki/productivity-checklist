@@ -289,13 +289,13 @@ nav button.on{color:var(--purple)}
 .brand .cbadge .pxs i{box-shadow:none}
 .brand .cbadge svg{width:25px;height:25px}
 @keyframes bbob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-2px) rotate(1.5deg)}}
-.brand .ttxt{transform:rotate(-2deg);transform-origin:right center;padding:4px 0;line-height:.9}
-.brand .t1{font-family:'Permanent Marker',cursive;font-weight:400;font-size:14px;letter-spacing:2px;color:var(--orange);text-shadow:1.5px 1.5px 0 var(--hud);margin-bottom:-2px;transform:rotate(1deg)}
-.brand .t2{position:relative;display:inline-block;font-family:'Permanent Marker',cursive;font-weight:400;font-size:46px;letter-spacing:1px;
-  background:linear-gradient(115deg,var(--cyan-bright) 0%,var(--lime-bright) 55%,var(--orange) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--cyan-bright);
-  -webkit-text-stroke:3px var(--hud);paint-order:stroke fill;
-  filter:drop-shadow(4px 5px 0 var(--hud)) drop-shadow(5px 7px 0 rgba(124,222,74,.5))}
-.brand .t2::after{content:"";position:absolute;width:7px;height:15px;background:var(--lime-bright);border-radius:0 0 4px 4px;left:14%;bottom:-7px;box-shadow:0 0 0 3px var(--hud);animation:tdrip 4.5s ease-in-out infinite}
+.brand .ttxt{transform:none;padding:2px 0;line-height:1}
+.brand .t1{font-family:'Press Start 2P',monospace;font-weight:400;font-size:8px;letter-spacing:2px;color:var(--orange);
+  text-shadow:-1px -1px 0 var(--hud),1px -1px 0 var(--hud),-1px 1px 0 var(--hud),1px 1px 0 var(--hud),2px 2px 0 rgba(0,0,0,.3);margin-bottom:7px}
+.brand .t2{position:relative;display:inline-block;font-family:'Press Start 2P',monospace;font-weight:400;font-size:28px;letter-spacing:2px;
+  color:var(--cyan-bright);
+  text-shadow:-1.5px -1.5px 0 var(--hud),1.5px -1.5px 0 var(--hud),-1.5px 1.5px 0 var(--hud),1.5px 1.5px 0 var(--hud),3px 3px 0 var(--magenta),4px 4px 0 var(--purple),6px 6px 0 var(--hud)}
+.brand .t2::after{display:none}
 @keyframes tdrip{0%,62%,100%{transform:translateY(0);opacity:.95}82%{transform:translateY(3px);opacity:1}}
 
 /* ===== LEVEL-UP CELEBRATION ===== */
