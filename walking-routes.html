@@ -7,306 +7,317 @@
 
 <!--
   =====================================================================
-  מסלולי הליכה בתל אביב — מפת פיקסל ארט 16 ביט מבוססת Google Maps
+  מסלולי הליכה בתל אביב — מפת לילה רטרו זוהרת, נתונים אמיתיים
   =====================================================================
   קובץ HTML יחיד (HTML + CSS + JS). אין צורך ב-build.
 
-  >>> איפה מכניסים מפתח Google Maps API? <<<
-  חפשו בקובץ את המחרוזת:  PASTE_GOOGLE_MAPS_API_KEY_HERE
-  והחליפו אותה במפתח שלכם. צריך להפעיל:
-    - Maps JavaScript API
-    - Directions API
-  בלי מפתח — האפליקציה עובדת ב"מצב דמו" (מפת פיקסל ארט מקומית, מסלולים מחושבים מקומית).
+  מקור הנתונים (אמיתי, ללא מפתח API):
+    • מפה:    Leaflet + אריחי CARTO (OpenStreetMap)
+    • ניתוב:  OSRM (פרופיל הליכה) — routing.openstreetmap.de/routed-foot
+  אם הניתוב לא זמין (לא מקוון) — נופלים בחן ל"מצב דמו" עם קווים ישרים ומסומן בבירור.
 
-  נקודת התחלה קבועה: "הבית שלי" — החלוצים 48, תל אביב (נקודת ה-Spawn).
+  נקודת התחלה קבועה: "הבית שלי" — החלוצים 48, תל אביב (Spawn).
+  כפתור "פתח בגוגל מפות" פותח את המסלול עם כל ה-waypoints בגוגל מפות (הליכה).
   =====================================================================
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <style>
-/* ============================ ערכת צבעים רטרו 16 ביט ============================ */
+/* ===================== ערכת צבעים — רטרו לילה זוהר ===================== */
 :root{
-  --night:#0d1030;          /* רקע כחול-לילה */
-  --night-2:#141a45;
-  --panel:#1b2150;          /* קונטיינרים */
-  --panel-2:#232a63;
-  --ink:#eaf0ff;            /* טקסט בהיר */
-  --ink-dim:#9aa6e0;
-  --line:#3a4596;           /* מסגרות */
-  --line-soft:#2a3170;
-  --cyan:#37e6ff;           /* ניאון תכלת */
-  --lime:#7cf06a;           /* ניאון ירוק */
-  --gold:#ffd23f;           /* זהב */
-  --magenta:#ff4d9d;        /* ורוד ניאון */
+  --bg:#070912;            /* רקע עמוק */
+  --bg-2:#0c1024;
+  --panel:rgba(18,22,48,.72);
+  --panel-solid:#121630;
+  --stroke:rgba(120,140,255,.18);
+  --stroke-2:rgba(120,140,255,.34);
+  --ink:#eef2ff;
+  --ink-dim:#9aa6d8;
+  --ink-faint:#6b76a8;
+  --cyan:#3ef0ff;
+  --cyan-deep:#12c2e0;
+  --magenta:#ff4d9d;
+  --violet:#9b6bff;
+  --gold:#ffd23f;
+  --lime:#7cf06a;
   --orange:#ff9b3d;
-  --sea:#2a6ed6;
-  --sea-2:#1a4fae;
-  --sand:#e8cf8a;
-  --park:#3f9d57;
-  --park-2:#2f7a42;
-  --road:#c9d2ff;
-  --pix:3px;                /* יחידת פיקסל לוגית */
+  --r:16px;
+  --glow-cyan:0 0 18px rgba(62,240,255,.35);
+  --glow-gold:0 0 22px rgba(255,210,63,.4);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{margin:0; padding:0; min-height:100%}
 body{
   font-family:'Heebo',system-ui,sans-serif;
-  background:
-    radial-gradient(circle at 20% -10%, rgba(55,230,255,.10), transparent 45%),
-    radial-gradient(circle at 90% 0%, rgba(255,77,157,.10), transparent 40%),
-    var(--night);
   color:var(--ink);
-  /* רקע נקודות סורק רטרו */
+  background:
+    radial-gradient(1100px 600px at 15% -10%, rgba(62,240,255,.10), transparent 55%),
+    radial-gradient(900px 600px at 95% 0%, rgba(255,77,157,.10), transparent 50%),
+    radial-gradient(800px 500px at 50% 120%, rgba(155,107,255,.12), transparent 55%),
+    var(--bg);
   background-attachment:fixed;
-  line-height:1.5;
-  font-size:16px;
+  font-size:16px; line-height:1.55;
 }
-/* שכבת "סורק" CRT עדינה על כל הדף */
-body::after{
-  content:""; position:fixed; inset:0; pointer-events:none; z-index:9999;
-  background:repeating-linear-gradient(0deg, rgba(0,0,0,.06) 0 2px, transparent 2px 4px);
-  mix-blend-mode:multiply; opacity:.5;
+/* סריקת CRT עדינה מאוד — רק על הרקע, לא על המפה */
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px);
 }
-img{image-rendering:pixelated}
-canvas{image-rendering:pixelated}
+.wrap{position:relative; z-index:1; max-width:1280px; margin:0 auto; padding:18px 16px 70px}
 
-/* ===== כלי מסגרת פיקסלית כללי (פינות מדורגות) ===== */
-.pixel-box{
-  position:relative; background:var(--panel);
-  border:var(--pix) solid var(--line);
-  box-shadow:
-    0 0 0 var(--pix) var(--night),
-    0 0 0 calc(var(--pix)*2) var(--line-soft),
-    6px 6px 0 rgba(0,0,0,.35);
-  border-radius:0;
-}
-h1,h2,h3{font-weight:800; letter-spacing:.2px}
-
-/* ============================ פריסה ============================ */
-.wrap{max-width:1180px; margin:0 auto; padding:14px 14px 60px}
-
-/* ---------- Header ---------- */
-header.hero{
-  text-align:center; padding:22px 16px 18px; margin-bottom:16px;
-}
-.title-badge{
-  display:inline-block; padding:12px 20px; margin:0 auto;
-  background:linear-gradient(180deg, var(--panel-2), var(--panel));
+/* ===================== Header ===================== */
+header.hero{ text-align:center; padding:26px 14px 22px }
+.kicker{
+  font-family:'Press Start 2P',cursive; font-size:10px; letter-spacing:3px;
+  color:var(--cyan); opacity:.9; margin-bottom:14px;
+  text-shadow:var(--glow-cyan);
 }
 .hero h1{
-  margin:0; font-size:clamp(20px,5vw,34px); color:var(--gold);
-  text-shadow:var(--pix) var(--pix) 0 #7a4d00, calc(var(--pix)*2) calc(var(--pix)*2) 0 rgba(0,0,0,.5);
+  margin:0; font-weight:900; font-size:clamp(28px,6vw,52px); letter-spacing:-.5px;
+  background:linear-gradient(180deg,#fff,#bcd0ff 55%,#7da2ff);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 2px 18px rgba(120,160,255,.35));
 }
-.hero .pixfont{font-family:'Press Start 2P',cursive; font-size:.5em; color:var(--cyan); display:block; margin-top:8px; letter-spacing:1px}
-.hero p.sub{margin:12px auto 0; max-width:640px; color:var(--ink-dim); font-size:clamp(13px,2.6vw,16px)}
+.hero h1 .em{
+  background:linear-gradient(180deg,#ffe98a,#ffd23f 55%,#ff9b3d);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.hero p.sub{ margin:14px auto 0; max-width:680px; color:var(--ink-dim); font-size:clamp(14px,2.6vw,17px) }
 
-/* ---------- פריסת תוכן ---------- */
-.layout{display:grid; grid-template-columns:340px 1fr; gap:16px; align-items:start}
-@media (max-width:900px){ .layout{grid-template-columns:1fr} }
+/* ===================== פריסה ===================== */
+.layout{display:grid; grid-template-columns:360px 1fr; gap:18px; align-items:start; margin-top:8px}
+@media (max-width:920px){ .layout{grid-template-columns:1fr} }
 
-/* ---------- פאנל הגדרות ---------- */
-.panel{padding:16px}
-.panel h2{font-size:16px; color:var(--cyan); margin:0 0 12px; display:flex; gap:8px; align-items:center}
-.field{margin-bottom:16px}
-.field > label.lbl{display:block; font-size:13px; color:var(--ink-dim); margin-bottom:7px; font-weight:700}
+/* כרטיס זכוכית כללי */
+.glass{
+  background:var(--panel); backdrop-filter:blur(14px) saturate(1.2);
+  -webkit-backdrop-filter:blur(14px) saturate(1.2);
+  border:1px solid var(--stroke); border-radius:var(--r);
+  box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+}
 
-/* כרטיס נקודת התחלה קבועה */
+/* ===================== פאנל הגדרות ===================== */
+.panel{padding:18px}
+.panel h2{
+  font-size:14px; letter-spacing:.5px; color:var(--cyan); margin:0 0 14px;
+  display:flex; gap:8px; align-items:center; text-transform:uppercase;
+}
+.field{margin-bottom:18px}
+.field > .lbl{display:block; font-size:12.5px; color:var(--ink-faint); margin-bottom:9px; font-weight:700; letter-spacing:.3px}
+
+/* כרטיס הבית הקבוע */
 .home-fixed{
-  display:flex; gap:10px; align-items:center; padding:10px 12px; margin-bottom:16px;
-  background:var(--panel-2); border:var(--pix) solid var(--gold);
-  box-shadow:inset 0 0 0 var(--pix) var(--night);
+  display:flex; gap:12px; align-items:center; padding:13px 14px; margin-bottom:18px;
+  border-radius:13px; position:relative; overflow:hidden;
+  background:linear-gradient(135deg, rgba(255,210,63,.14), rgba(255,155,61,.06));
+  border:1px solid rgba(255,210,63,.4); box-shadow:var(--glow-gold);
 }
-.home-fixed .ico{width:32px; height:32px; flex:0 0 32px}
-.home-fixed .txt b{display:block; color:var(--gold); font-size:13px}
-.home-fixed .txt span{font-size:12px; color:var(--ink-dim)}
+.home-fixed .ico{
+  width:44px; height:44px; flex:0 0 44px; display:grid; place-items:center; font-size:24px;
+  border-radius:11px; background:rgba(0,0,0,.3); border:1px solid rgba(255,210,63,.5);
+}
+.home-fixed b{display:block; color:var(--gold); font-size:13.5px; letter-spacing:.2px}
+.home-fixed span{font-size:12.5px; color:var(--ink-dim)}
 
-/* רשת כפתורי בחירה (chips) */
-.chips{display:flex; flex-wrap:wrap; gap:7px}
+/* chips */
+.chips{display:flex; flex-wrap:wrap; gap:8px}
 .chip{
   cursor:pointer; user-select:none; font-family:inherit;
-  padding:8px 11px; font-size:13px; font-weight:700; color:var(--ink);
-  background:var(--panel-2); border:var(--pix) solid var(--line);
-  box-shadow:2px 2px 0 rgba(0,0,0,.4); transition:transform .04s, background .15s;
+  padding:9px 13px; font-size:13px; font-weight:600; color:var(--ink-dim);
+  background:rgba(255,255,255,.03); border:1px solid var(--stroke);
+  border-radius:11px; transition:.16s;
 }
-.chip:hover{background:var(--line-soft)}
-.chip:active{transform:translate(2px,2px); box-shadow:none}
+.chip:hover{border-color:var(--stroke-2); color:var(--ink); background:rgba(255,255,255,.06)}
 .chip[aria-pressed="true"]{
-  background:linear-gradient(180deg,var(--cyan),#1fa9c4); color:#06243a; border-color:var(--cyan);
-  text-shadow:none;
+  color:#04121a; font-weight:800; border-color:transparent;
+  background:linear-gradient(180deg,var(--cyan),var(--cyan-deep)); box-shadow:var(--glow-cyan);
 }
-.chip.green[aria-pressed="true"]{background:linear-gradient(180deg,var(--lime),#3fae35); color:#0a2a06; border-color:var(--lime)}
+.chip.alt[aria-pressed="true"]{background:linear-gradient(180deg,var(--lime),#3fae35); color:#072709; box-shadow:0 0 18px rgba(124,240,106,.35)}
 
-/* טוגלים */
-.toggle-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0}
-.toggle-row .t-label{font-size:13.5px}
-.switch{position:relative; width:54px; height:28px; flex:0 0 54px; cursor:pointer}
+/* toggles */
+.toggle-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 0}
+.toggle-row .t-label{font-size:13.5px; color:var(--ink)}
+.switch{position:relative; width:50px; height:28px; flex:0 0 50px; cursor:pointer}
 .switch input{opacity:0; width:0; height:0; position:absolute}
-.switch .track{
-  position:absolute; inset:0; background:var(--night); border:var(--pix) solid var(--line);
-  transition:background .15s;
-}
-.switch .knob{
-  position:absolute; top:2px; right:2px; width:18px; height:18px; background:var(--ink-dim);
-  transition:transform .15s, background .15s;
-}
-.switch input:checked + .track{background:var(--lime)}
-.switch input:checked + .track .knob{transform:translateX(-26px); background:#0a2a06}
+.switch .track{position:absolute; inset:0; border-radius:20px; background:rgba(255,255,255,.08);
+  border:1px solid var(--stroke); transition:.18s}
+.switch .knob{position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%;
+  background:var(--ink-faint); transition:.18s}
+.switch input:checked + .track{background:linear-gradient(90deg,var(--lime),#3fae35); border-color:transparent; box-shadow:0 0 14px rgba(124,240,106,.4)}
+.switch input:checked + .track .knob{transform:translateX(-22px); background:#06270a}
 
-/* צ'קבוקסים להעדפות */
-.prefs label{display:flex; gap:9px; align-items:center; font-size:13.5px; padding:6px 0; cursor:pointer}
-.prefs input{appearance:none; width:20px; height:20px; flex:0 0 20px; background:var(--night);
-  border:var(--pix) solid var(--line); cursor:pointer; position:relative}
-.prefs input:checked{background:var(--lime); border-color:var(--lime)}
-.prefs input:checked::after{content:"✓"; position:absolute; inset:0; display:grid; place-items:center; color:#0a2a06; font-weight:900; font-size:13px}
+/* prefs */
+.prefs label{display:flex; gap:10px; align-items:center; font-size:13.5px; padding:6px 0; cursor:pointer; color:var(--ink)}
+.prefs input{appearance:none; width:21px; height:21px; flex:0 0 21px; border-radius:7px;
+  background:rgba(255,255,255,.04); border:1px solid var(--stroke); cursor:pointer; position:relative; transition:.15s}
+.prefs input:checked{background:linear-gradient(180deg,var(--lime),#3fae35); border-color:transparent}
+.prefs input:checked::after{content:"✓"; position:absolute; inset:0; display:grid; place-items:center; color:#06270a; font-weight:900; font-size:13px}
 
 /* כפתור ראשי */
 .btn-main{
-  width:100%; margin-top:6px; cursor:pointer; font-family:'Press Start 2P',cursive;
-  font-size:13px; padding:16px 12px; color:#1a0d00;
-  background:linear-gradient(180deg,var(--gold),#e0a800);
-  border:var(--pix) solid #fff3c4; box-shadow:4px 4px 0 #5c3d00, 0 0 18px rgba(255,210,63,.35);
-  letter-spacing:1px;
+  width:100%; margin-top:4px; cursor:pointer; font-family:inherit; font-weight:900; letter-spacing:.4px;
+  font-size:17px; padding:15px 12px; color:#1a0d00; border:0; border-radius:13px;
+  background:linear-gradient(180deg,#ffe98a,var(--gold) 60%,#f0b400);
+  box-shadow:var(--glow-gold), 0 8px 20px rgba(255,180,0,.2); transition:.12s;
 }
-.btn-main:active{transform:translate(4px,4px); box-shadow:0 0 18px rgba(255,210,63,.35)}
-.btn-main .he{font-family:'Heebo'; font-weight:900; display:block; font-size:18px}
+.btn-main:hover{filter:brightness(1.05)}
+.btn-main:active{transform:translateY(2px)}
 
-/* ---------- אזור המפה ---------- */
-.map-card{padding:0; overflow:hidden}
+/* ===================== מפה ===================== */
+.map-card{padding:0; overflow:hidden; position:relative}
 .map-toolbar{
-  display:flex; align-items:center; gap:8px; padding:10px 12px;
-  background:var(--panel-2); border-bottom:var(--pix) solid var(--line); flex-wrap:wrap;
+  display:flex; align-items:center; gap:10px; padding:12px 14px; flex-wrap:wrap;
+  border-bottom:1px solid var(--stroke); background:rgba(10,13,30,.5);
 }
-.map-toolbar .seg{display:flex; border:var(--pix) solid var(--line); background:var(--night)}
-.map-toolbar .seg button{
-  font-family:inherit; font-weight:800; font-size:12.5px; color:var(--ink-dim);
-  background:transparent; border:0; padding:8px 12px; cursor:pointer;
-}
-.map-toolbar .seg button[aria-pressed="true"]{background:var(--cyan); color:#06243a}
-.map-toolbar .spacer{flex:1}
-.demo-pill{
-  font-size:11.5px; font-weight:800; color:#2a1500; background:var(--orange);
-  padding:6px 10px; border:var(--pix) solid #ffcf9b;
-}
-.map-stage{position:relative; width:100%; aspect-ratio:4/3; background:var(--sea-2); min-height:340px}
-@media (max-width:900px){ .map-stage{aspect-ratio:1/1; min-height:0} }
-#gmap{position:absolute; inset:0}
-#pixcanvas{position:absolute; inset:0; width:100%; height:100%; touch-action:none}
-.map-legend{
-  position:absolute; bottom:8px; inset-inline-start:8px; z-index:5;
-  background:rgba(13,16,48,.85); border:var(--pix) solid var(--line); padding:8px 10px;
-  font-size:11px; max-width:62%;
-}
-.map-legend b{color:var(--gold); display:block; margin-bottom:4px; font-size:11.5px}
-.map-legend .row{display:flex; gap:6px; align-items:center; margin:3px 0; color:var(--ink-dim)}
-.map-legend .sw{width:12px; height:12px; flex:0 0 12px; border:1px solid rgba(255,255,255,.3)}
-.demo-banner{
-  position:absolute; top:8px; inset-inline:8px; z-index:6; text-align:center;
-  background:rgba(255,155,61,.92); color:#2a1500; font-weight:800; font-size:12px;
-  padding:7px 8px; border:var(--pix) solid #ffcf9b;
-}
-.map-msg{
-  position:absolute; inset:0; display:none; place-items:center; text-align:center; z-index:7;
-  background:rgba(13,16,48,.92); padding:24px; color:var(--ink);
-}
-.map-msg.show{display:grid}
+.seg{display:flex; gap:4px; padding:4px; border-radius:11px; background:rgba(0,0,0,.3); border:1px solid var(--stroke)}
+.seg button{font-family:inherit; font-weight:700; font-size:12.5px; color:var(--ink-dim);
+  background:transparent; border:0; padding:7px 13px; border-radius:8px; cursor:pointer; transition:.15s}
+.seg button[aria-pressed="true"]{background:linear-gradient(180deg,var(--violet),#6d3fe0); color:#fff; box-shadow:0 0 14px rgba(155,107,255,.4)}
+.spacer{flex:1}
+.live-pill,.demo-pill{font-size:11.5px; font-weight:800; padding:6px 11px; border-radius:9px; letter-spacing:.3px}
+.live-pill{color:#06270a; background:linear-gradient(180deg,var(--lime),#3fae35); box-shadow:0 0 14px rgba(124,240,106,.35)}
+.demo-pill{color:#2a1500; background:linear-gradient(180deg,#ffc46b,var(--orange))}
+#map{width:100%; height:560px; background:#0a0e1f; z-index:1}
+@media (max-width:920px){ #map{height:64vh; min-height:380px} }
 
-/* ---------- כרטיסי מסלולים ---------- */
-.routes{margin-top:20px}
-.routes h2{color:var(--cyan); font-size:18px; margin:0 0 12px}
-.route-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px}
-.route-card{padding:14px; display:flex; flex-direction:column; gap:10px}
-.route-card.active{border-color:var(--gold); box-shadow:0 0 0 var(--pix) var(--night),0 0 0 calc(var(--pix)*2) var(--gold),6px 6px 0 rgba(0,0,0,.35)}
-.route-card .rc-head{display:flex; align-items:center; gap:10px}
-.route-card .rc-icon{width:38px; height:38px; flex:0 0 38px}
-.route-card h3{margin:0; font-size:17px; color:var(--gold)}
-.route-card .rc-type{font-size:11.5px; color:var(--ink-dim)}
-.rc-stats{display:grid; grid-template-columns:repeat(2,1fr); gap:7px}
-.rc-stat{background:var(--panel-2); border:var(--pix) solid var(--line-soft); padding:7px 9px}
-.rc-stat .v{font-size:16px; font-weight:900; color:var(--cyan)}
-.rc-stat .k{font-size:11px; color:var(--ink-dim)}
-.rc-diff{display:inline-block; font-size:11.5px; font-weight:800; padding:3px 9px; border:var(--pix) solid var(--line)}
-.rc-diff.easy{color:#0a2a06; background:var(--lime)}
+/* תיוג מקור הנתונים */
+.data-note{position:absolute; bottom:10px; inset-inline-start:10px; z-index:600;
+  background:rgba(7,9,18,.82); border:1px solid var(--stroke); color:var(--ink-dim);
+  font-size:11px; padding:6px 10px; border-radius:9px; backdrop-filter:blur(6px)}
+.data-note.demo{border-color:var(--orange); color:#ffd9b0}
+
+/* פס סיכום מסלול מעל המפה */
+.route-hud{display:flex; gap:10px; padding:12px 14px; flex-wrap:wrap; border-top:1px solid var(--stroke); background:rgba(10,13,30,.4)}
+.hud-stat{flex:1; min-width:80px; text-align:center; padding:8px; border-radius:11px; background:rgba(255,255,255,.03); border:1px solid var(--stroke)}
+.hud-stat .v{font-size:19px; font-weight:900; color:var(--cyan)}
+.hud-stat .v.gold{color:var(--gold)}
+.hud-stat .k{font-size:11px; color:var(--ink-faint)}
+
+/* ===================== markers (Leaflet divIcon) ===================== */
+.mk{display:grid; place-items:center; width:34px; height:34px; border-radius:50% 50% 50% 6px;
+  transform:rotate(45deg); border:2px solid #fff; box-shadow:0 4px 12px rgba(0,0,0,.5);}
+.mk span{transform:rotate(-45deg); font-size:16px; line-height:1}
+.mk.k-beach{background:linear-gradient(180deg,#ffe08a,#ffb84d)}
+.mk.k-seapark,.mk.k-railpark,.mk.k-boulevard{background:linear-gradient(180deg,#7cf06a,#37a83a)}
+.mk.k-oldhouse{background:linear-gradient(180deg,#ff8fc0,#e0307f)}
+.mk.k-clocktower,.mk.k-flea{background:linear-gradient(180deg,#ffd98a,#d8a24a)}
+.mk.k-port{background:linear-gradient(180deg,#6bd6ff,#1aa3d6)}
+.mk.k-market{background:linear-gradient(180deg,#ff9b6b,#ff5e3a)}
+.mk.k-plaza,.mk.k-florentin{background:linear-gradient(180deg,#b79bff,#7d4fe0)}
+/* בית */
+.mk-home{position:relative; display:grid; place-items:center; width:46px; height:46px}
+.mk-home .ring{position:absolute; inset:0; border-radius:50%; border:2px solid var(--gold);
+  box-shadow:0 0 18px rgba(255,210,63,.7); animation:pulse 2s infinite ease-out}
+.mk-home .badge{width:36px; height:36px; border-radius:11px; display:grid; place-items:center; font-size:20px;
+  background:linear-gradient(180deg,#ffe98a,#f0b400); border:2px solid #fff7d6; box-shadow:0 4px 14px rgba(0,0,0,.5)}
+@keyframes pulse{0%{transform:scale(.8); opacity:.9} 100%{transform:scale(1.7); opacity:0}}
+/* נקודה זוהרת מהלכת */
+.walker{width:14px; height:14px; border-radius:50%; background:#fff;
+  box-shadow:0 0 10px 3px var(--gold), 0 0 20px 6px rgba(255,210,63,.6)}
+/* tooltips + popups */
+.leaflet-tooltip.tip{background:rgba(7,9,18,.9); border:1px solid var(--stroke-2); color:var(--ink);
+  font-family:'Heebo'; font-weight:700; font-size:12px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.5)}
+.leaflet-tooltip.tip::before{display:none}
+.leaflet-tooltip.tip-home{border-color:var(--gold); color:var(--gold)}
+.leaflet-popup-content-wrapper{background:var(--panel-solid); color:var(--ink); border:1px solid var(--stroke-2);
+  border-radius:13px; box-shadow:0 12px 40px rgba(0,0,0,.6)}
+.leaflet-popup-tip{background:var(--panel-solid)}
+.leaflet-popup-content{margin:13px 15px; font-family:'Heebo'; direction:rtl; text-align:right; line-height:1.5}
+.pop-title{font-weight:900; color:var(--gold); font-size:15px; margin-bottom:5px}
+.pop-note{font-size:12.5px; color:var(--ink-dim)}
+.leaflet-container a.leaflet-popup-close-button{color:var(--ink-dim)}
+.leaflet-control-attribution{background:rgba(7,9,18,.7)!important; color:var(--ink-faint)!important}
+.leaflet-control-attribution a{color:var(--ink-dim)!important}
+.leaflet-bar a{background:var(--panel-solid); color:var(--ink); border-color:var(--stroke)}
+.leaflet-bar a:hover{background:#1a2046}
+
+/* ===================== כרטיסי מסלולים ===================== */
+.routes{margin-top:22px}
+.routes h2{color:var(--cyan); font-size:20px; margin:0 0 8px; letter-spacing:.3px}
+.routes .hint{color:var(--ink-faint); font-size:13px; margin:0 0 14px}
+.fit-note{margin-bottom:14px; font-size:13px; padding:11px 14px; border-radius:12px; display:none;
+  border:1px solid var(--stroke); background:rgba(255,255,255,.03)}
+.fit-note.show{display:block}
+.fit-note.short{border-color:rgba(255,155,61,.6); background:rgba(255,155,61,.08)}
+.fit-note.long{border-color:rgba(255,77,157,.6); background:rgba(255,77,157,.08)}
+.fit-note.ok{border-color:rgba(124,240,106,.6); background:rgba(124,240,106,.08)}
+.route-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:16px}
+.route-card{padding:16px; display:flex; flex-direction:column; gap:12px; transition:.18s; cursor:default}
+.route-card:hover{border-color:var(--stroke-2); transform:translateY(-2px)}
+.route-card.active{border-color:var(--gold); box-shadow:var(--glow-gold), 0 10px 40px rgba(0,0,0,.45)}
+.rc-head{display:flex; align-items:center; gap:12px}
+.rc-icon{width:46px; height:46px; flex:0 0 46px; border-radius:13px; display:grid; place-items:center; font-size:24px;
+  background:rgba(255,255,255,.04); border:1px solid var(--stroke)}
+.rc-head h3{margin:0; font-size:18px}
+.rc-type{font-size:12px; color:var(--ink-faint)}
+.rc-stats{display:grid; grid-template-columns:repeat(2,1fr); gap:8px}
+.rc-stat{background:rgba(255,255,255,.03); border:1px solid var(--stroke); border-radius:11px; padding:9px 11px}
+.rc-stat .v{font-size:17px; font-weight:900; color:var(--cyan)}
+.rc-stat .k{font-size:11px; color:var(--ink-faint)}
+.rc-diff{display:inline-block; font-size:12px; font-weight:800; padding:3px 11px; border-radius:8px}
+.rc-diff.easy{color:#06270a; background:var(--lime)}
 .rc-diff.mid{color:#2a1500; background:var(--gold)}
 .rc-diff.long{color:#2a0a00; background:var(--orange)}
-.rc-stops{font-size:12.5px; color:var(--ink-dim)}
-.rc-stops b{color:var(--ink)}
-.rc-stops .chain{display:flex; flex-wrap:wrap; gap:4px 2px; margin-top:5px}
-.rc-stops .chain span{background:var(--panel-2); padding:2px 7px; border:1px solid var(--line-soft); font-size:11.5px; color:var(--ink)}
-.rc-actions{display:flex; flex-wrap:wrap; gap:7px; margin-top:auto}
-.rc-actions button{
-  flex:1; min-width:90px; cursor:pointer; font-family:inherit; font-weight:800; font-size:12.5px;
-  padding:9px 8px; border:var(--pix) solid var(--line); background:var(--panel-2); color:var(--ink);
-  box-shadow:2px 2px 0 rgba(0,0,0,.4);
-}
-.rc-actions button:active{transform:translate(2px,2px); box-shadow:none}
-.rc-actions .b-start{background:linear-gradient(180deg,var(--lime),#3fae35); color:#0a2a06; border-color:var(--lime)}
-.rc-actions .b-gmap{background:linear-gradient(180deg,var(--cyan),#1fa9c4); color:#06243a; border-color:var(--cyan)}
-.rc-actions .b-save.saved{background:var(--gold); color:#2a1500; border-color:var(--gold)}
+.rc-stops b{font-size:12.5px; color:var(--ink-dim)}
+.rc-stops .chain{display:flex; flex-wrap:wrap; gap:6px; margin-top:7px}
+.rc-stops .chain span{background:rgba(255,255,255,.04); padding:3px 9px; border:1px solid var(--stroke);
+  border-radius:8px; font-size:11.5px; color:var(--ink); cursor:pointer; transition:.14s}
+.rc-stops .chain span:hover{border-color:var(--cyan); color:var(--cyan)}
+.rc-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:auto}
+.rc-actions button{flex:1; min-width:92px; cursor:pointer; font-family:inherit; font-weight:800; font-size:12.5px;
+  padding:10px 8px; border:1px solid var(--stroke); border-radius:10px; background:rgba(255,255,255,.04); color:var(--ink); transition:.14s}
+.rc-actions button:hover{border-color:var(--stroke-2)}
+.rc-actions .b-start{background:linear-gradient(180deg,var(--lime),#3fae35); color:#06270a; border-color:transparent}
+.rc-actions .b-gmap{background:linear-gradient(180deg,var(--cyan),var(--cyan-deep)); color:#04121a; border-color:transparent}
+.rc-actions .b-save.saved{background:linear-gradient(180deg,var(--gold),#f0b400); color:#2a1500; border-color:transparent}
 
-/* ---------- הודעת התאמת אורך ---------- */
-.fit-note{margin-top:10px; font-size:12.5px; padding:8px 10px; border:var(--pix) solid var(--line);
-  background:var(--panel-2); display:none}
-.fit-note.show{display:block}
-.fit-note.short{border-color:var(--orange)}
-.fit-note.long{border-color:var(--magenta)}
-.fit-note.ok{border-color:var(--lime)}
-
-/* ---------- toast ---------- */
-#toast{position:fixed; bottom:18px; inset-inline:0; display:flex; justify-content:center; z-index:10000; pointer-events:none}
-#toast .t{background:var(--panel-2); border:var(--pix) solid var(--gold); color:var(--ink); padding:11px 16px;
-  font-weight:700; font-size:13.5px; box-shadow:4px 4px 0 rgba(0,0,0,.4); opacity:0; transform:translateY(12px);
-  transition:.25s; max-width:min(560px,90vw); line-height:1.45; pointer-events:auto}
+/* toast */
+#toast{position:fixed; bottom:22px; inset-inline:0; display:flex; justify-content:center; z-index:10000; pointer-events:none; padding:0 16px}
+#toast .t{pointer-events:auto; background:var(--panel-solid); border:1px solid var(--stroke-2); color:var(--ink);
+  padding:13px 18px; border-radius:13px; font-weight:600; font-size:13.5px; line-height:1.5;
+  box-shadow:0 12px 40px rgba(0,0,0,.6); opacity:0; transform:translateY(14px); transition:.25s; max-width:min(560px,92vw)}
 #toast .t.show{opacity:1; transform:none}
+#toast .t b{color:var(--gold)}
 
-footer{text-align:center; margin-top:30px; color:var(--ink-dim); font-size:12px}
-footer code{color:var(--gold); background:var(--night-2); padding:2px 6px; border:1px solid var(--line-soft)}
-a{color:var(--cyan)}
+footer{text-align:center; margin-top:34px; color:var(--ink-faint); font-size:12.5px}
+footer a{color:var(--cyan)}
 </style>
 </head>
 <body>
-
 <div class="wrap">
 
-  <!-- ======================= HEADER ======================= -->
+  <!-- ===================== HEADER ===================== -->
   <header class="hero">
-    <div class="title-badge pixel-box">
-      <h1>מסלולי הליכה בתל אביב
-        <span class="pixfont">TEL AVIV WALK QUEST</span>
-      </h1>
-    </div>
-    <p class="sub">בחר יעד צעדים וקבל מסלול אמיתי על מפת פיקסל ארט מבוססת Google&nbsp;Maps</p>
+    <div class="kicker">TEL AVIV · WALK QUEST</div>
+    <h1>מסלולי הליכה <span class="em">בתל אביב</span></h1>
+    <p class="sub">בחר יעד צעדים וקבל מסלול הליכה אמיתי על מפת לילה רטרו זוהרת — מבוססת OpenStreetMap</p>
   </header>
 
   <div class="layout">
 
-    <!-- ======================= פאנל הגדרות ======================= -->
-    <aside class="panel pixel-box">
+    <!-- ===================== פאנל הגדרות ===================== -->
+    <aside class="panel glass">
       <h2>⚙️ הגדרות מסלול</h2>
 
-      <!-- נקודת התחלה קבועה -->
       <div class="home-fixed">
-        <!-- אייקון בית פיקסלי (SVG) -->
-        <svg class="ico" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
-          <rect x="7" y="1" width="2" height="2" fill="#ffd23f"/>
-          <rect x="3" y="3" width="10" height="2" fill="#ff4d9d"/>
-          <rect x="2" y="5" width="12" height="2" fill="#ff4d9d"/>
-          <rect x="3" y="7" width="10" height="7" fill="#ffe08a"/>
-          <rect x="6" y="9" width="4" height="5" fill="#7a4d00"/>
-          <rect x="4" y="9" width="2" height="2" fill="#37e6ff"/>
-          <rect x="10" y="9" width="2" height="2" fill="#37e6ff"/>
-        </svg>
-        <div class="txt">
+        <div class="ico">🏠</div>
+        <div>
           <b>נקודת התחלה: הבית שלי</b>
           <span>החלוצים 48, תל אביב</span>
         </div>
       </div>
 
-      <!-- יעד צעדים -->
       <div class="field">
-        <label class="lbl">יעד צעדים</label>
+        <span class="lbl">יעד צעדים</span>
         <div class="chips" id="steps-chips" role="group" aria-label="יעד צעדים">
           <button class="chip" data-val="5000">5,000</button>
           <button class="chip" data-val="7500">7,500</button>
@@ -315,30 +326,27 @@ a{color:var(--cyan)}
         </div>
       </div>
 
-      <!-- סוג מסלול -->
       <div class="field">
-        <label class="lbl">סוג מסלול</label>
+        <span class="lbl">סוג מסלול</span>
         <div class="chips" id="type-chips" role="group" aria-label="סוג מסלול">
           <button class="chip" data-val="sea">🌊 ים</button>
           <button class="chip" data-val="jaffa">🕌 יפו</button>
           <button class="chip" data-val="urban">🏙️ עירוני</button>
-          <button class="chip" data-val="green">🌳 ירוק / פארקים</button>
+          <button class="chip" data-val="green">🌳 ירוק</button>
           <button class="chip" data-val="night">🌙 לילה בטוח</button>
           <button class="chip" data-val="mixed" aria-pressed="true">✨ מעורב</button>
         </div>
       </div>
 
-      <!-- רמת קושי -->
       <div class="field">
-        <label class="lbl">רמת קושי</label>
+        <span class="lbl">רמת קושי</span>
         <div class="chips" id="diff-chips" role="group" aria-label="רמת קושי">
-          <button class="chip green" data-val="easy">קל</button>
-          <button class="chip green" data-val="mid" aria-pressed="true">בינוני</button>
-          <button class="chip green" data-val="long">ארוך</button>
+          <button class="chip alt" data-val="easy">קל</button>
+          <button class="chip alt" data-val="mid" aria-pressed="true">בינוני</button>
+          <button class="chip alt" data-val="long">ארוך</button>
         </div>
       </div>
 
-      <!-- טוגלים -->
       <div class="field">
         <div class="toggle-row">
           <span class="t-label">🔁 מסלול מעגלי (חזרה הביתה)</span>
@@ -350,59 +358,54 @@ a{color:var(--cyan)}
         </div>
       </div>
 
-      <!-- העדפות -->
       <div class="field prefs">
-        <label class="lbl">העדפות</label>
+        <span class="lbl">העדפות</span>
         <label><input type="checkbox" data-pref="lit"> להעדיף רחובות מוארים</label>
         <label><input type="checkbox" data-pref="sea"> להעדיף טיילת וים</label>
         <label><input type="checkbox" data-pref="quiet"> להעדיף אזורים שקטים</label>
-        <label><input type="checkbox" data-pref="cafe"> להעדיף בתי קפה / נקודות עצירה</label>
+        <label><input type="checkbox" data-pref="cafe"> להעדיף בתי קפה / עצירות</label>
         <label><input type="checkbox" data-pref="noMain"> להימנע מכבישים ראשיים</label>
       </div>
 
-      <button class="btn-main" id="find-btn"><span class="he">מצא לי מסלול</span></button>
+      <button class="btn-main" id="find-btn">מצא לי מסלול 🥾</button>
     </aside>
 
-    <!-- ======================= אזור מפה ======================= -->
+    <!-- ===================== מפה ===================== -->
     <main>
-      <section class="map-card pixel-box">
+      <section class="map-card glass">
         <div class="map-toolbar">
-          <div class="seg" role="group" aria-label="תצוגת מפה">
-            <button data-view="pixel" aria-pressed="true">🎮 פיקסל ארט</button>
-            <button data-view="combined">🗺️ משולב</button>
-            <button data-view="google">🌐 גוגל רגיל</button>
+          <div class="seg" role="group" aria-label="סגנון מפה">
+            <button data-base="night" aria-pressed="true">🌃 לילה</button>
+            <button data-base="day">🛣️ סטנדרט</button>
           </div>
           <span class="spacer"></span>
-          <span class="demo-pill" id="demo-pill">מצב דמו</span>
+          <span class="live-pill" id="live-pill">נתונים אמיתיים · OSM</span>
         </div>
-        <div class="map-stage">
-          <div id="gmap"></div>
-          <canvas id="pixcanvas"></canvas>
-          <div class="demo-banner" id="demo-banner">מצב דמו — המסלול יוצג במדויק לאחר חיבור Google&nbsp;Maps&nbsp;API</div>
-          <div class="map-legend">
-            <b>מקרא</b>
-            <div class="row"><span class="sw" style="background:#2a6ed6"></span> ים</div>
-            <div class="row"><span class="sw" style="background:#e8cf8a"></span> חוף / חול</div>
-            <div class="row"><span class="sw" style="background:#3f9d57"></span> פארק</div>
-            <div class="row"><span class="sw" style="background:#ffd23f"></span> הבית שלי / מסלול</div>
-          </div>
-          <div class="map-msg" id="map-msg"></div>
+
+        <div id="map"></div>
+        <div class="data-note" id="data-note">מפה: OpenStreetMap · ניתוב הליכה: OSRM</div>
+
+        <div class="route-hud" id="route-hud">
+          <div class="hud-stat"><div class="v gold" id="hud-name">—</div><div class="k">מסלול פעיל</div></div>
+          <div class="hud-stat"><div class="v" id="hud-km">—</div><div class="k">ק״מ</div></div>
+          <div class="hud-stat"><div class="v" id="hud-steps">—</div><div class="k">צעדים</div></div>
+          <div class="hud-stat"><div class="v" id="hud-min">—</div><div class="k">דק׳ הליכה</div></div>
         </div>
       </section>
 
-      <!-- ======================= כרטיסי מסלולים ======================= -->
+      <!-- ===================== כרטיסי מסלולים ===================== -->
       <section class="routes">
-        <h2>🥾 מסלולים מומלצים</h2>
+        <h2>🗺️ מסלולים מומלצים</h2>
+        <p class="hint">לחצו "התחל מסלול" כדי לראות אותו על המפה · לחצו על עצירה לפרטים אמיתיים על האזור</p>
         <div class="fit-note" id="fit-note"></div>
         <div class="route-grid" id="route-grid"></div>
       </section>
     </main>
-
   </div>
 
   <footer>
-    מצב הפעלה: <span id="mode-label">דמו</span> ·
-    כדי לחבר נתונים אמיתיים החליפו בקוד את <code>PASTE_GOOGLE_MAPS_API_KEY_HERE</code> במפתח Google&nbsp;Maps.
+    מפה: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> ·
+    אריחים: CARTO · ניתוב הליכה: OSRM (FOSSGIS). אופי האזורים מבוסס על מחקר אמיתי.
   </footer>
 </div>
 
@@ -410,176 +413,79 @@ a{color:var(--cyan)}
 
 <script>
 /* =====================================================================
-   1) הגדרות בסיס + מפתח API
+   1) נתונים: בית קבוע, נקודות עניין, וערכות אופי לפי מחקר אמיתי
    ===================================================================== */
-// >>> הדביקו כאן את מפתח Google Maps API שלכם (Maps JavaScript API + Directions API) <<<
-const GOOGLE_MAPS_API_KEY = "PASTE_GOOGLE_MAPS_API_KEY_HERE";
+const HOME = { lat:32.0553, lng:34.7699, name:"הבית שלי", addr:"החלוצים 48, תל אביב" };
 
-// נקודת ההתחלה הקבועה — הבית שלי, החלוצים 48, תל אביב (Spawn)
-const HOME = { lat: 32.0551, lng: 34.7701, name: "הבית שלי", addr: "החלוצים 48, תל אביב" };
+// המרת צעדים -> מרחק (1000 צעדים ≈ 750 מ')
+const STEP_M = 0.75;
+const metersToSteps = m => Math.round(m / STEP_M);
+const kmToWalkMin   = km => Math.round(km / 5 * 60); // ~5 קמ"ש
 
-// המרת צעדים -> מרחק (לפי הדרישה: 1000 צעדים ≈ 750 מ')
-const STEP_METERS = 0.75;
-const stepsToKm = s => (s * STEP_METERS) / 1000;
-const metersToSteps = m => Math.round(m / STEP_METERS);
-const kmToWalkMin = km => Math.round(km / 5 * 60); // ~5 קמ"ש
-
-const hasKey = GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== "PASTE_GOOGLE_MAPS_API_KEY_HERE";
-
-/* =====================================================================
-   2) נקודות עניין אמיתיות (קואורדינטות) + "ערכת ויזואל" לכל אזור
-      ----------------------------------------------------------------
-      האופי הוויזואלי של כל אזור נקבע לפי מחקר על האזור (ראו AREA_KITS).
-      אם אין ודאות — שומרים על עיצוב כללי ועדין (kind:"generic").
-   ===================================================================== */
 const POI = {
   home:        HOME,
   mesila:      { lat:32.0606, lng:34.7647, name:"פארק המסילה" },
-  neveTzedek:  { lat:32.0628, lng:34.7663, name:"נווה צדק" },
+  neveTzedek:  { lat:32.0631, lng:34.7660, name:"נווה צדק" },
   charlesClore:{ lat:32.0623, lng:34.7585, name:"פארק צ׳ארלס קלור" },
   bananaBeach: { lat:32.0606, lng:34.7586, name:"חוף בננה ביץ׳" },
   clockTower:  { lat:32.0540, lng:34.7571, name:"כיכר השעון, יפו" },
-  jaffaPort:   { lat:32.0509, lng:34.7522, name:"נמל יפו" },
+  jaffaPort:   { lat:32.0518, lng:34.7519, name:"נמל יפו" },
   fleaMarket:  { lat:32.0528, lng:34.7556, name:"שוק הפשפשים" },
   carmel:      { lat:32.0686, lng:34.7689, name:"שוק הכרמל" },
   rothschild:  { lat:32.0645, lng:34.7716, name:"שדרות רוטשילד" },
-  habima:      { lat:32.0726, lng:34.7805, name:"הבימה" },
-  herzl:       { lat:32.0610, lng:34.7695, name:"הרצל" },
+  habima:      { lat:32.0726, lng:34.7805, name:"כיכר הבימה" },
+  herzl:       { lat:32.0610, lng:34.7693, name:"הרצל" },
   keremTeimanim:{lat:32.0668, lng:34.7666, name:"כרם התימנים" }
 };
 
-/* ערכות ויזואל לאזורים — מבוסס על מחקר אמיתי מהאינטרנט (יוני 2026).
-   לכל אזור: kind (סוג אייקון פיקסלי), note (תיאור אמיתי קצר), avoid (מה לא לצייר).
-   העיקרון: לצייר רק מה שבאמת קיים באזור, ולהימנע מסטריאוטיפים.
-   ----------------------------------------------------------------------------
-   מקורות עיקריים: Wikipedia (Florentin, Old Jaffa, Jaffa Clock Tower, Jaffa Port,
-   Carmel Market, Neve Tzedek, Habima Square, Park HaMesila), visit-tel-aviv,
-   touristisrael, beinharimtours, israel21c, tlvbeaches, biblewalks ועוד. */
+/* ערכות אופי — מבוסס מחקר (יוני 2026). emoji = אייקון; note = תיאור אמיתי קצר. */
 const AREA_KITS = {
-  home: {
-    kind:"florentin",
-    note:"החלוצים 48 — בניין פינתי בן 5 קומות לשימור, בלב פלורנטין. רחוב שכונתי-מסחרי נמוך, לא שדרה ולא מגדלים.",
-    avoid:"לא באוהאוס לבן מצוחצח, לא חוף, לא ירוק שופע."
-  },
-  // פארק המסילה: פארק קווי ירוק מודרני (נפתח 2020) על תוואי הרכבת יפו–ירושלים.
-  // *** אין מסילת רכבת פעילה/רציפה כיום *** — רק סימון/הטבעה סמלית של הפס + גשר משוחזר (גשר שלוש).
-  mesila: {
-    kind:"railpark",
-    note:"פארק קווי ירוק שקוע על תוואי הרכבת הישנה. שביל הולכי רגל + שביל אופניים, עצים, גשר שלוש המשוחזר. הפס מסומן באופן סמלי בלבד.",
-    avoid:"לא מסילת רכבת רציפה עם אדנים, לא רכבת/קטר, לא רציף תחנה — הקו אינו פעיל."
-  },
-  neveTzedek: {
-    kind:"oldhouse",
-    note:"השכונה היהודית הראשונה (1887): בתים נמוכים 1–2 קומות משופצים, סמטאות, בוגנוויליה, רחוב שבזי הבוטיקי וכיכר סוזן דלל.",
-    avoid:"לא מבנים גבוהים, לא גרפיטי תעשייתי, לא שדרות רחבות."
-  },
-  charlesClore: {
-    kind:"seapark",
-    note:"פארק חופי פתוח עם מדשאות וגבעות ירק לאורך הים, טיילת מרוצפת, פסלים ומזרקה, ונוף לעיר העתיקה ביפו בדרום.",
-    avoid:"לא קיר מלונות צמוד, לא בולוורד מסחרי צפוף — זה פארק פתוח."
-  },
-  bananaBeach: {
-    kind:"beach",
-    note:"חוף חולי קצר ונינוח: בר חוף עם שמשיות, כדורעף, מעגל מתופפים בשקיעה, ונוף ליפו בדרום.",
-    avoid:"לא בננות (השם לא קשור לפרי), לא ריזורט יוקרה, לא קיר מלונות גבוה צמוד."
-  },
-  clockTower: {
-    kind:"clocktower",
-    note:"מגדל השעון (1900–1903): מגדל אבן גיר בגוון דבש, שתי שעונים, צמתים סביבו, ולצידו הסראייה והקישלה. כניסה ליפו העתיקה.",
-    avoid:"לא לבנים אדומות/שיש לבן, לא כיכר נטולת תנועה — הוא עומד בצומת דרכים."
-  },
-  jaffaPort: {
-    kind:"port",
-    note:"נמל דייגים קטן: סירות דיג קטנות במזח, מחסנים נמוכים משופצים (כולל מחסן מכולות צבעוני), שובר גלים סלעי, וכנסיית סנט פטר על הגבעה.",
-    avoid:"לא מנופי מטען/ספינות ענק, לא חוף חולי (זה מזח אבן וסלעים)."
-  },
-  fleaMarket: {
-    kind:"flea",
-    note:"שוק הפשפשים: שטיחים פרוסים על המדרכה ותלויים על קירות, ערימות וינטג'/עתיקות, סוככים צבעוניים, סמטאות אבן נמוכות, ובערב אורות וברים.",
-    avoid:"לא שוק תבלינים/ירקות, לא ביזאר מקורה ענק — זה שוק עתיקות פתוח ברובו."
-  },
-  carmel: {
-    kind:"market",
-    note:"שוק הכרמל: שוק רחוב פתוח וצפוף לאורך רחוב הכרמל, דוכנים עם סוככים, פירמידות ירקות ופירות, בגדים תלויים והמון קונים. סגור בשבת.",
-    avoid:"לא אולם שוק מקורה, לא עצים/ירק — האופי הוא צפיפות וצבעי הסחורה."
-  },
-  rothschild: {
-    kind:"boulevard",
-    note:"שדרה רחבה עם טיילת מרכזית מוצלת בעצים, מבני באוהאוס לבנים נמוכים, קיוסקי קפה על האי, רוכבי אופניים, ומגדל תמיר אחד פה ושם.",
-    avoid:"לא קיר רצוף של גורדי שחקים, לא סמטאות, לא ים צמוד — השדרה היא בלב היבשה."
-  },
-  habima: {
-    kind:"plaza",
-    note:"כיכר הבימה (עיצוב דני קרוון, 2010): כיכר אבן בהירה פתוחה, תיאטרון הבימה והיכל התרבות המודרניסטיים, וגן שקוע ירוק קטן.",
-    avoid:"לא מגדלים מקיפים, לא מראה היסטורי/מעוטר, לא דוכני שוק — האופי הוא מרחב פתוח."
-  },
-  herzl: {
-    kind:"florentin",
-    note:"הרצל — ציר מסחרי בגבול פלורנטין/נווה צדק, חזיתות חנויות ורהיטים, מבנים נמוכים.",
-    avoid:"לא שדרה ירוקה רחבה, לא מגדלים."
-  },
-  keremTeimanim: {
-    kind:"oldhouse",
-    note:"כרם התימנים: אשכול צפוף של בתים נמוכים בסמטאות מתפתלות מאחורי שוק הכרמל, גפנים ובוגנוויליה, ובתי כנסת קטנים.",
-    avoid:"לא מסגד/צריח (זו שכונה של בתי כנסת), לא מבנים גבוהים."
-  }
+  home:        { kind:"florentin", emoji:"🏠", note:"החלוצים 48 — בניין פינתי בן 5 קומות לשימור, בלב פלורנטין. רחוב שכונתי-מסחרי נמוך." },
+  mesila:      { kind:"railpark",  emoji:"🌿", note:"פארק קווי ירוק שקוע על תוואי הרכבת הישנה (נפתח 2020): שביל הולכי רגל ואופניים, עצים וגשר שלוש המשוחזר. הפס מסומן באופן סמלי בלבד — אין רכבת פעילה." },
+  neveTzedek:  { kind:"oldhouse",  emoji:"🏘️", note:"השכונה היהודית הראשונה (1887): בתים נמוכים משופצים, סמטאות, בוגנוויליה, רחוב שבזי הבוטיקי וכיכר סוזן דלל." },
+  charlesClore:{ kind:"seapark",   emoji:"🏞️", note:"פארק חופי פתוח עם מדשאות וגבעות ירק לאורך הים, טיילת מרוצפת, פסלים, ונוף לעיר העתיקה ביפו." },
+  bananaBeach: { kind:"beach",     emoji:"🏖️", note:"חוף חולי נינוח: בר חוף עם שמשיות, כדורעף, מעגל מתופפים בשקיעה, ונוף ליפו בדרום." },
+  clockTower:  { kind:"clocktower",emoji:"🕰️", note:"מגדל השעון (1900–1903): מגדל אבן גיר בגוון דבש בצומת מרכזי, לצד הסראייה והקישלה — כניסה ליפו העתיקה." },
+  jaffaPort:   { kind:"port",      emoji:"⚓", note:"נמל דייגים קטן: סירות דיג במזח, מחסנים נמוכים משופצים (כולל מחסן מכולות צבעוני), שובר גלים סלעי וכנסיית סנט פטר על הגבעה." },
+  fleaMarket:  { kind:"flea",      emoji:"🧶", note:"שוק הפשפשים: שטיחים פרוסים ותלויים, ערימות וינטג' ועתיקות, סוככים צבעוניים, סמטאות אבן נמוכות, ובערב ברים ואורות." },
+  carmel:      { kind:"market",    emoji:"🍉", note:"שוק הכרמל: שוק רחוב פתוח וצפוף לאורך רחוב הכרמל — דוכנים עם סוככים, פירמידות ירקות, בגדים תלויים והמון קונים. סגור בשבת." },
+  rothschild:  { kind:"boulevard", emoji:"🌳", note:"שדרה רחבה עם טיילת מרכזית מוצלת בעצים, מבני באוהאוס לבנים, קיוסקי קפה ורוכבי אופניים." },
+  habima:      { kind:"plaza",     emoji:"🎭", note:"כיכר הבימה (עיצוב דני קרוון, 2010): כיכר אבן בהירה פתוחה, תיאטרון הבימה והיכל התרבות, וגן שקוע ירוק." },
+  herzl:       { kind:"florentin", emoji:"🎨", note:"הרצל — ציר מסחרי בגבול פלורנטין/נווה צדק, חזיתות חנויות ורהיטים, מבנים נמוכים וגרפיטי." },
+  keremTeimanim:{kind:"oldhouse",  emoji:"🍷", note:"כרם התימנים: אשכול צפוף של בתים נמוכים בסמטאות מתפתלות מאחורי שוק הכרמל, גפנים ובוגנוויליה, ובתי כנסת קטנים." }
 };
-
-/* החזרת תיאור אמיתי לאזור (לשימוש בטולטיפ/הודעה) */
-function areaNote(key){ return AREA_KITS[key]?.note || POI[key]?.name || ""; }
+const areaNote = k => AREA_KITS[k]?.note || POI[k]?.name || "";
 
 /* =====================================================================
-   3) הגדרת שלושת המסלולים (לפי הדרישה)
+   2) שלושת המסלולים
    ===================================================================== */
 const ROUTES = [
-  {
-    id:"sea-jaffa", name:"ים ויפו", type:"sea", icon:"sea",
-    targetSteps:10000, diff:"long",
-    char:"ים, יפו, טיילת, אזור פתוח",
-    stops:["home","mesila","charlesClore","clockTower","jaffaPort","fleaMarket","home"]
-  },
-  {
-    id:"florentin-nevetzedek-sea", name:"פלורנטין, נווה צדק והים", type:"mixed", icon:"city",
-    targetSteps:8500, diff:"mid",
-    char:"עירוני, ים, שכונות יפות, קל יחסית",
-    stops:["home","mesila","neveTzedek","charlesClore","bananaBeach","carmel","herzl","home"]
-  },
-  {
-    id:"urban-easy", name:"עירוני קל", type:"urban", icon:"city",
-    targetSteps:9000, diff:"mid",
-    char:"עירוני, שדרות, שוק, שכונות",
-    stops:["home","herzl","rothschild","habima","carmel","neveTzedek","home"]
-  }
+  { id:"sea-jaffa", name:"ים ויפו", type:"sea", emoji:"🌊", targetSteps:10000, diff:"long",
+    char:"ים · יפו · טיילת · אזור פתוח",
+    stops:["home","mesila","charlesClore","clockTower","jaffaPort","fleaMarket","home"] },
+  { id:"florentin-nevetzedek-sea", name:"פלורנטין, נווה צדק והים", type:"mixed", emoji:"✨", targetSteps:8500, diff:"mid",
+    char:"עירוני · ים · שכונות יפות · קל יחסית",
+    stops:["home","mesila","neveTzedek","charlesClore","bananaBeach","carmel","herzl","home"] },
+  { id:"urban-easy", name:"עירוני קל", type:"urban", emoji:"🏙️", targetSteps:9000, diff:"mid",
+    char:"עירוני · שדרות · שוק · שכונות",
+    stops:["home","herzl","rothschild","habima","carmel","neveTzedek","home"] }
 ];
-
 const DIFF_LABEL = { easy:"קל", mid:"בינוני", long:"ארוך" };
-const TYPE_LABEL = { sea:"ים", jaffa:"יפו", urban:"עירוני", green:"ירוק / פארקים", night:"לילה בטוח", mixed:"מעורב" };
 
 /* =====================================================================
-   4) ניהול מצב + localStorage
+   3) מצב + localStorage
    ===================================================================== */
-const LS_KEY = "tlv_walk_quest_v1";
+const LS_KEY = "tlv_walk_quest_v2";
 const state = {
-  steps:10000, type:"mixed", diff:"mid",
-  loop:true, lit:false,
+  steps:10000, type:"mixed", diff:"mid", loop:true, lit:false,
   prefs:{ lit:false, sea:false, quiet:false, cafe:false, noMain:false },
-  view:"pixel",
-  activeRouteId:null,
-  saved:[]
+  base:"night", activeRouteId:null, saved:[]
 };
-
-function loadState(){
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    if(raw){ Object.assign(state, JSON.parse(raw)); }
-  }catch(e){ /* התעלם */ }
-}
-function saveState(){
-  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
-}
+function loadState(){ try{ const r=localStorage.getItem(LS_KEY); if(r) Object.assign(state, JSON.parse(r)); }catch(e){} }
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
 
 /* =====================================================================
-   5) חישוב מרחק (Haversine) לצורך מצב דמו והערכות
+   4) עזרי מרחק (לדמו/הערכה)
    ===================================================================== */
 function haversine(a,b){
   const R=6371000, toR=x=>x*Math.PI/180;
@@ -587,475 +493,222 @@ function haversine(a,b){
   const s=Math.sin(dLat/2)**2 + Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)**2;
   return 2*R*Math.asin(Math.sqrt(s));
 }
-function pathLength(pts){
-  let d=0; for(let i=1;i<pts.length;i++) d+=haversine(pts[i-1],pts[i]); return d;
-}
-
-// מקדם "פיתול רחובות": הליכה אמיתית ארוכה ~25% מקו אווירי בין נקודות
 const STREET_FACTOR = 1.28;
-
-function routePoints(route){ return route.stops.map(k=>POI[k]); }
-function routeAirMeters(route){ return pathLength(routePoints(route)); }
-function routeWalkMeters(route){ return routeAirMeters(route)*STREET_FACTOR; }
+const routePoints = route => route.stops.map(k=>POI[k]);
+function demoMeters(route){ const p=routePoints(route); let d=0; for(let i=1;i<p.length;i++) d+=haversine(p[i-1],p[i]); return d*STREET_FACTOR; }
 
 /* =====================================================================
-   6) ציור מפת הפיקסל ארט (Canvas)  — שכבה אמיתית מעל גיאומטריה אמיתית
-      ----------------------------------------------------------------
-      פרויקציה: ממירים lat/lng לפיקסלים לפי תיבה תוחמת קבועה של ת"א.
-      במצב "משולב" עם Google — מסנכרנים לפי projection של המפה.
+   5) מפת Leaflet — אריחי לילה / יום
    ===================================================================== */
-const cvs = document.getElementById('pixcanvas');
-const ctx = cvs.getContext('2d');
+let map, baseLayers={}, routeLayer, walkerMarker, walkerRAF=null;
 
-// תיבה תוחמת המכסה את כל נקודות העניין (ת"א דרומית + יפו + חוף)
-const BBOX = { n:32.0770, s:32.0470, w:34.7480, e:34.7860 };
-
-// קו חוף אמיתי (מקורב) צפון->דרום עד נמל יפו, לציור הים/חוף
-const COASTLINE = [
-  {lat:32.0770, lng:34.7648},
-  {lat:32.0700, lng:34.7625},
-  {lat:32.0640, lng:34.7592},
-  {lat:32.0605, lng:34.7578},
-  {lat:32.0560, lng:34.7560},
-  {lat:32.0509, lng:34.7522},  // נמל יפו
-  {lat:32.0480, lng:34.7510}
-];
-
-let pixW=800, pixH=600;
-function resizeCanvas(){
-  const stage = cvs.parentElement;
-  const r = stage.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio||1, 2);
-  pixW = Math.max(320, Math.round(r.width));
-  pixH = Math.max(280, Math.round(r.height));
-  cvs.width = pixW*dpr; cvs.height = pixH*dpr;
-  cvs.style.width=r.width+'px'; cvs.style.height=r.height+'px';
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.imageSmoothingEnabled=false;
-}
-
-// פרויקציה מקומית lat/lng -> px (כשאין/לא משתמשים ב-Google)
-function projLocal(p){
-  const x = (p.lng - BBOX.w)/(BBOX.e - BBOX.w) * pixW;
-  // y הפוך: צפון למעלה
-  const y = (BBOX.n - p.lat)/(BBOX.n - BBOX.s) * pixH;
-  return {x,y};
-}
-// פרויקציה פעילה (מוחלפת ל-Google במצב משולב)
-let project = projLocal;
-
-const GRID = 6; // גודל "פיקסל לוגי" לציור הסטייל
-function px(v){ return Math.round(v/GRID)*GRID; }
-function fillRectPx(x,y,w,h,color){ ctx.fillStyle=color; ctx.fillRect(px(x),px(y),Math.max(GRID,px(w)),Math.max(GRID,px(h))); }
-
-// ---- רעש דטרמיניסטי לטקסטורות יציבות ----
-function rnd(seed){ let x=Math.sin(seed*99991)*10000; return x-Math.floor(x); }
-
-let waveT=0; // אנימציית גלים/כיוון
-let animActive=false;
-
-function drawSea(){
-  // ממלאים את כל הבד בים, ואז "חופרים" יבשה ממזרח לקו החוף
-  ctx.fillStyle = '#1a4fae';
-  ctx.fillRect(0,0,pixW,pixH);
-  // גלי פיקסל קטנים
-  for(let y=0;y<pixH;y+=GRID*3){
-    for(let x=0;x<pixW;x+=GRID*4){
-      const n = rnd((x*3+y*7)+Math.floor(waveT));
-      if(n>0.7){ fillRectPx(x + (Math.floor(waveT)%2?GRID:0), y, GRID*2, GRID, '#3a82e6'); }
-      else if(n>0.45){ fillRectPx(x, y, GRID, GRID, '#2a6ed6'); }
-    }
-  }
-}
-
-function landPolygon(){
-  // פוליגון יבשה = קו החוף + פינות מזרחיות
-  const pts = COASTLINE.map(project);
-  const tr = project({lat:BBOX.n, lng:BBOX.e});
-  const br = project({lat:BBOX.s, lng:BBOX.e});
-  return [ ...pts, br, tr ];
-}
-
-function drawLand(){
-  const poly = landPolygon();
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(poly[0].x, poly[0].y);
-  for(let i=1;i<poly.length;i++) ctx.lineTo(poly[i].x, poly[i].y);
-  ctx.closePath();
-  ctx.clip();
-  // בסיס יבשה בז'-עירוני כהה
-  ctx.fillStyle = '#2b2f5e';
-  ctx.fillRect(0,0,pixW,pixH);
-  // טקסטורת "בלוקים" עירונית עדינה
-  for(let y=0;y<pixH;y+=GRID*5){
-    for(let x=0;x<pixW;x+=GRID*5){
-      const n=rnd(x*5+y*11);
-      if(n>0.82) fillRectPx(x,y,GRID*3,GRID*3,'#33386b');
-      else if(n>0.66) fillRectPx(x,y,GRID*2,GRID*2,'#262a55');
-    }
-  }
-  ctx.restore();
-  drawBeachStrip(poly);
-}
-
-function drawBeachStrip(poly){
-  // רצועת חול דקה לאורך קו החוף (חופי ת"א הם חול רחב)
-  ctx.save();
-  ctx.lineJoin='round';
-  const sand = COASTLINE.map(project);
-  ctx.strokeStyle = '#e8cf8a';
-  ctx.lineWidth = GRID*2.5;
-  ctx.beginPath();
-  ctx.moveTo(sand[0].x, sand[0].y);
-  for(let i=1;i<sand.length;i++) ctx.lineTo(sand[i].x, sand[i].y);
-  ctx.stroke();
-  ctx.restore();
-}
-
-// ציור "פארק" כמלבן ירוק פיקסלי סביב נקודה
-function drawParkBlob(p, rPx){
-  const c = project(p);
-  for(let dy=-rPx;dy<=rPx;dy+=GRID){
-    for(let dx=-rPx;dx<=rPx;dx+=GRID){
-      if(dx*dx+dy*dy <= rPx*rPx){
-        const n=rnd((c.x+dx)*3+(c.y+dy)*7);
-        fillRectPx(c.x+dx, c.y+dy, GRID, GRID, n>0.6?'#3f9d57':'#2f7a42');
-      }
-    }
-  }
-}
-
-// פארק קווי (פארק המסילה) — רצועה ירוקה דקה בין שתי נקודות. אמת: פארק קווי, לא בלוק.
-function drawLinearPark(a,b,halfW){
-  const pa=project(a), pb=project(b);
-  ctx.save();
-  ctx.lineCap='round';
-  ctx.strokeStyle='#2f7a42'; ctx.lineWidth=halfW*2;
-  ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
-  ctx.strokeStyle='#3f9d57'; ctx.lineWidth=halfW;
-  ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
-  ctx.restore();
-}
-
-// רשת רחובות עירונית עדינה (קווי פיקסל) — נותנת תחושת "מפה"
-function drawStreetGrid(){
-  ctx.save();
-  const poly=landPolygon();
-  ctx.beginPath();
-  ctx.moveTo(poly[0].x,poly[0].y);
-  for(let i=1;i<poly.length;i++) ctx.lineTo(poly[i].x,poly[i].y);
-  ctx.closePath(); ctx.clip();
-  ctx.fillStyle='rgba(201,210,255,.10)';
-  for(let x=0;x<pixW;x+=GRID*7){ ctx.fillRect(px(x),0,GRID,pixH); }
-  for(let y=0;y<pixH;y+=GRID*7){ ctx.fillRect(0,px(y),pixW,GRID); }
-  ctx.restore();
-}
-
-/* ----- ציור המסלול כ"שביל מואר" RPG ----- */
-let currentRoutePts = null; // מערך נקודות הקו (overview path אם יש Google, אחרת נקודות העצירה)
-function setActiveRoutePts(pts){ currentRoutePts = pts; }
-
-function drawTrail(){
-  if(!currentRoutePts || currentRoutePts.length<2) return;
-  const pts = currentRoutePts.map(project);
-  // הילה
-  ctx.save();
-  ctx.lineCap='round'; ctx.lineJoin='round';
-  ctx.strokeStyle='rgba(255,210,63,.25)'; ctx.lineWidth=GRID*4;
-  strokePath(pts);
-  // ליבת השביל מקווקו פיקסלי
-  ctx.setLineDash([GRID*2, GRID*1.4]);
-  ctx.lineDashOffset = -waveT*2;
-  ctx.strokeStyle='#ffd23f'; ctx.lineWidth=GRID*1.7;
-  strokePath(pts);
-  ctx.setLineDash([]);
-  ctx.restore();
-  // חיצי כיוון לאורך השביל
-  drawDirectionArrows(pts);
-}
-function strokePath(pts){
-  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y);
-  ctx.stroke();
-}
-function drawDirectionArrows(pts){
-  ctx.fillStyle='#fff3c4';
-  const every=Math.max(1,Math.floor(pts.length/8));
-  for(let i=every;i<pts.length;i+=every){
-    const a=pts[i-1], b=pts[i];
-    const ang=Math.atan2(b.y-a.y,b.x-a.x);
-    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
-    ctx.save(); ctx.translate(mx,my); ctx.rotate(ang);
-    ctx.beginPath(); ctx.moveTo(6,0); ctx.lineTo(-4,-4); ctx.lineTo(-4,4); ctx.closePath(); ctx.fill();
-    ctx.restore();
-  }
-}
-
-/* ----- אייקוני נקודות עצירה + הבית ----- */
-function drawMarkers(route){
-  // אייקוני אזור לפי AREA_KITS (אם מוגדר) — אחרת נקודה כללית
-  route.stops.forEach((key,idx)=>{
-    if(key==="home") return; // הבית מצויר בנפרד (ובסוף)
-    const p=POI[key]; const c=project(p);
-    drawPixelMarker(c.x,c.y, AREA_KITS[key]?.kind || "generic");
-    drawLabel(c.x, c.y-GRID*4, p.name);
-  });
-  // הבית — תמיד, marker מיוחד
-  drawHome();
-}
-function drawHome(){
-  const c=project(HOME);
-  const s=GRID;
-  // דגל Spawn + בית
-  fillRectPx(c.x-2*s, c.y-1*s, 4*s, 3*s, '#ffe08a');           // קיר
-  fillRectPx(c.x-2.5*s, c.y-2*s, 5*s, 1*s, '#ff4d9d');         // גג
-  fillRectPx(c.x-0.5*s, c.y, 1*s, 2*s, '#7a4d00');             // דלת
-  fillRectPx(c.x-1.5*s, c.y-3.5*s, 0.6*s, 3.5*s, '#cfd8ff');   // מוט דגל
-  fillRectPx(c.x-1.5*s, c.y-3.5*s, 2.2*s, 1.4*s, '#37e6ff');   // דגל
-  // הילת Spawn
-  ctx.strokeStyle='rgba(255,210,63,.5)'; ctx.lineWidth=2;
-  ctx.strokeRect(px(c.x-3*s), px(c.y-2.5*s), px(6*s), px(6*s));
-  drawLabel(c.x, c.y-GRID*6, "הבית שלי", true);
-}
-/* גליפים פיקסליים לפי אופי אמיתי של האזור (מבוסס מחקר) */
-function drawPixelMarker(x,y,kind){
-  const s=GRID;
-  const R=(dx,dy,w,h,c)=>fillRectPx(x+dx*s, y+dy*s, w*s, h*s, c);
-  // צל קטן מתחת
-  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillRect(px(x-1.4*s),px(y+0.4*s),px(2.8*s),GRID);
-  switch(kind){
-    case "florentin": // פלורנטין: מבנה נמוך, תריס מתכת, נגיעת גרפיטי
-      R(-1.4,-2.2,2.8,2.6,'#6b6f9e');            // קיר נמוך אפרפר
-      R(-1.4,-0.2,2.8,0.6,'#8d92c9');            // תריס מתכת
-      R(-1.0,-1.8,0.8,0.8,'#ff4d9d');            // תג גרפיטי
-      R(0.2,-1.4,0.6,0.6,'#37e6ff');             // תג נוסף
-      break;
-    case "railpark": // פארק המסילה: ירק שקוע + גשר משוחזר + הטבעת פס סמלית (לא מסילה פעילה)
-      R(-1.6,-0.2,3.2,0.8,'#2f7a42');            // רצועת ירק שקועה
-      R(-1.6,-0.6,3.2,0.5,'#3f9d57');
-      R(-1.4,0.6,0.5,0.5,'#7a5a33'); R(0.9,0.6,0.5,0.5,'#7a5a33'); // רגלי גשר
-      R(-1.4,0.2,2.8,0.4,'#9a7a4a');             // קשת גשר שלוש
-      R(-1.2,-1.4,0.5,0.8,'#3f9d57'); R(0.7,-1.4,0.5,0.8,'#3f9d57'); // עצים
-      // הטבעת פס סמלית (נקודות) — לא מסילה רציפה
-      ctx.fillStyle='#d8c089'; ctx.fillRect(px(x-1.2*s),px(y+0.1*s),GRID,GRID); ctx.fillRect(px(x+0.6*s),px(y+0.1*s),GRID,GRID);
-      break;
-    case "oldhouse": // נווה צדק / כרם התימנים: בית נמוך מעוטר + בוגנוויליה
-      R(-1.2,-1.6,2.4,2.0,'#e9dcc0');            // קיר קרם משופץ
-      R(-1.5,-2.2,3.0,0.7,'#b5552f');            // גג רעפים
-      R(-0.4,-0.6,0.8,1.0,'#7a4d00');            // דלת
-      R(0.7,-2.0,0.6,0.6,'#ff4d9d');             // בוגנוויליה
-      R(-1.4,-1.0,0.5,0.5,'#3aa83a');            // ירק
-      break;
-    case "seapark": // צ'ארלס קלור: מדשאה/גבעה ירוקה מול הים
-      R(-1.6,0,3.2,0.6,'#3f9d57');               // מדשאה
-      R(-1.2,-0.6,2.4,0.7,'#3aa83a');            // גבעה
-      R(-1.8,0.8,3.6,0.5,'#37e6ff');             // קו ים
-      R(0.4,-1.2,0.4,0.8,'#2f7a42');             // עץ בודד
-      break;
-    case "beach": // בננה ביץ': חול + שמשייה + רשת כדורעף
-      R(-1.6,0.4,3.2,0.6,'#e8cf8a');             // חול
-      R(-1.8,1.0,3.6,0.5,'#37e6ff');             // ים
-      R(0.4,-1.4,0.2,1.8,'#7a4d00');             // מוט שמשייה
-      R(-0.2,-1.8,1.6,0.6,'#ff9b3d');            // שמשייה
-      R(-1.5,-0.6,0.2,1.0,'#cfd8ff');            // עמוד רשת כדורעף
-      break;
-    case "clocktower": // מגדל השעון יפו: מגדל אבן דבש + שעון
-      R(-0.7,-2.6,1.4,3.0,'#d8b86a');            // גוף אבן גיר
-      R(-0.9,-2.9,1.8,0.5,'#b8924a');            // כתר עליון
-      R(-0.4,-2.2,0.8,0.8,'#0d1030');            // לוח שעון
-      R(-0.2,-2.0,0.2,0.4,'#ffd23f');            // מחוג
-      break;
-    case "port": // נמל יפו: סירת דיג קטנה על מים + מחסן נמוך
-      R(-1.8,0.6,3.6,0.6,'#1a4fae');             // מים
-      R(-1.0,-0.2,2.0,0.8,'#9a7a4a');            // גוף סירה
-      R(-0.1,-1.4,0.2,1.2,'#cfd8ff');            // תורן
-      R(0.1,-1.3,0.8,0.7,'#ff9b3d');             // מפרש/דגל
-      break;
-    case "flea": // שוק הפשפשים: שטיח צבעוני פרוס + סמטת אבן
-      R(-1.4,-1.4,2.8,1.8,'#c9b48a');            // קיר אבן נמוך
-      R(-1.2,0.4,2.4,0.8,'#b5552f');             // שטיח פרוס
-      R(-1.0,0.55,0.5,0.5,'#ffd23f'); R(-0.1,0.55,0.5,0.5,'#37e6ff'); R(0.7,0.55,0.4,0.5,'#3aa83a'); // דוגמת שטיח
-      break;
-    case "market": // שוק הכרמל: דוכן עם סוכך פסים + ערימת ירקות
-      R(-1.6,-1.8,3.2,0.6,'#ff9b3d');            // סוכך
-      ctx.fillStyle='#ffd23f'; ctx.fillRect(px(x-1.6*s),px(y-1.8*s),GRID,GRID); ctx.fillRect(px(x),px(y-1.8*s),GRID,GRID);
-      R(-1.4,-1.2,2.8,1.4,'#6b6f9e');            // דוכן
-      R(-1.1,-0.6,0.6,0.5,'#e0307f'); R(-0.2,-0.6,0.6,0.5,'#7ce04a'); R(0.6,-0.6,0.5,0.5,'#ffd23f'); // ירקות/פירות
-      break;
-    case "boulevard": // רוטשילד: עץ על טיילת מרכזית + קיוסק
-      R(-0.3,-0.6,0.6,1.0,'#7a4d00');            // גזע
-      R(-1.3,-2.2,2.6,1.8,'#3aa83a');            // צמרת רחבה (מוצל)
-      R(-1.0,-2.0,2.0,1.2,'#3f9d57');
-      R(-1.8,0.4,3.6,0.5,'#9aa6e0');             // ריצוף טיילת
-      break;
-    case "plaza": // הבימה: כיכר אבן פתוחה + מבנה מודרניסטי + גן שקוע
-      R(-1.8,0.2,3.6,0.7,'#cdbf9a');             // ריצוף אבן בהירה
-      R(-1.4,-1.8,1.6,2.0,'#c9d2ff');            // מבנה מודרניסטי בהיר
-      R(-1.4,-1.8,1.6,0.4,'#9aa6e0');
-      R(0.4,-0.2,1.0,0.6,'#3f9d57');             // גן שקוע ירוק
-      break;
-    default: // כללי ועדין — כשאין ודאות, לא ממציאים פרטים
-      R(-1.0,-2.0,2.0,2.0,'#ff4d9d');
-      R(-0.4,-0.2,0.8,1.0,'#ff4d9d');
-      R(-0.3,-1.5,0.6,0.6,'#0d1030');
-  }
-}
-function drawLabel(x,y,text,big){
-  ctx.font = (big?'bold 12px':'11px')+" 'Heebo', sans-serif";
-  ctx.textAlign='center'; ctx.textBaseline='bottom';
-  const w=ctx.measureText(text).width+10;
-  ctx.fillStyle='rgba(13,16,48,.82)';
-  ctx.fillRect(Math.round(x-w/2), Math.round(y-15), Math.round(w), 15);
-  ctx.fillStyle= big?'#ffd23f':'#eaf0ff';
-  ctx.fillText(text, x, y-2);
-}
-
-/* ----- ציור מלא של שכבת הפיקסל ----- */
-function renderPixel(route){
-  if(!cvs.width) return;
-  ctx.clearRect(0,0,pixW,pixH);
-  if(project===projLocal){
-    // מפה עצמאית מלאה (מצב פיקסל / דמו)
-    drawSea();
-    drawLand();
-    drawStreetGrid();
-    // פארקים אמיתיים שנמצאים בתיבה — מצוירים לפי האופי האמיתי שלהם
-    drawParkBlob(POI.charlesClore, GRID*5);                 // צ'ארלס קלור — פארק חופי פתוח רחב
-    drawLinearPark(POI.mesila, POI.neveTzedek, GRID*1.6);   // פארק המסילה — רצועה קווית ירוקה (לא בלוק)
-  }
-  // מעל בסיס (גם במצב משולב מעל Google): מסלול + אייקונים
-  if(route){ drawTrail(); drawMarkers(route); }
-}
-
-/* =====================================================================
-   7) Google Maps — טעינה דינמית, מפה מסוגננת, Directions, Overlay פיקסלי
-   ===================================================================== */
-let gmap=null, directionsService=null, directionsRenderer=null, pixelOverlay=null;
-let googleReady=false;
-
-// סגנון מפה רטרו כהה (צבעים כלליים) — לשימוש במצב גוגל/משולב
-const RETRO_STYLE = [
-  {elementType:'geometry',stylers:[{color:'#1b2150'}]},
-  {elementType:'labels.text.stroke',stylers:[{color:'#0d1030'}]},
-  {elementType:'labels.text.fill',stylers:[{color:'#9aa6e0'}]},
-  {featureType:'water',elementType:'geometry',stylers:[{color:'#1a4fae'}]},
-  {featureType:'landscape',elementType:'geometry',stylers:[{color:'#2b2f5e'}]},
-  {featureType:'park',elementType:'geometry',stylers:[{color:'#2f7a42'}]},
-  {featureType:'poi',elementType:'labels',stylers:[{visibility:'off'}]},
-  {featureType:'road',elementType:'geometry',stylers:[{color:'#3a4596'}]},
-  {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#4a56b0'}]},
-  {featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#cfd8ff'}]},
-  {featureType:'transit',stylers:[{visibility:'off'}]}
-];
-
-function loadGoogle(){
-  return new Promise((resolve,reject)=>{
-    if(!hasKey){ reject('no-key'); return; }
-    const s=document.createElement('script');
-    s.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&libraries=geometry&language=he&region=IL&callback=__gmapsReady`;
-    s.async=true; s.defer=true;
-    window.__gmapsReady=()=>resolve();
-    s.onerror=()=>reject('load-error');
-    document.head.appendChild(s);
-  });
-}
-
-function initGoogle(){
-  gmap = new google.maps.Map(document.getElementById('gmap'),{
-    center:{lat:(BBOX.n+BBOX.s)/2, lng:(BBOX.w+BBOX.e)/2},
-    zoom:14, disableDefaultUI:true, zoomControl:true, gestureHandling:'greedy',
-    styles:RETRO_STYLE
-  });
-  directionsService=new google.maps.DirectionsService();
-  directionsRenderer=new google.maps.DirectionsRenderer({
-    map:gmap, suppressMarkers:true,
-    polylineOptions:{strokeColor:'#ffd23f', strokeWeight:5, strokeOpacity:.9}
-  });
-  // Overlay פיקסלי מעל Google (לסנכרון פרויקציה במצב משולב)
-  setupPixelOverlay();
-  googleReady=true;
-}
-
-// OverlayView שמצייר את שכבת הפיקסל בקואורדינטות המפה
-function setupPixelOverlay(){
-  pixelOverlay = new google.maps.OverlayView();
-  pixelOverlay.onAdd=function(){};
-  pixelOverlay.draw=function(){
-    if(state.view!=='combined') return;
-    const proj=this.getProjection(); if(!proj) return;
-    project = (p)=>{
-      const pt=proj.fromLatLngToContainerPixel(new google.maps.LatLng(p.lat,p.lng));
-      return {x:pt.x, y:pt.y};
-    };
-    resizeCanvas();
-    const route = activeRoute();
-    renderPixel(route);
-  };
-  pixelOverlay.onRemove=function(){};
-  pixelOverlay.setMap(gmap);
-}
-
-/* בקשת מסלול הליכה אמיתי דרך Directions API */
-function requestDirections(route){
-  return new Promise((resolve,reject)=>{
-    const pts=routePoints(route);
-    const origin=pts[0], destination=pts[pts.length-1];
-    const waypoints=pts.slice(1,-1).map(p=>({location:{lat:p.lat,lng:p.lng}, stopover:true}));
-    directionsService.route({
-      origin, destination, waypoints,
-      travelMode:google.maps.TravelMode.WALKING,
-      optimizeWaypoints:false
-    },(res,status)=>{
-      if(status==='OK') resolve(res);
-      else reject(status);
-    });
-  });
-}
-
-/* =====================================================================
-   8) רינדור כרטיסי מסלולים
-   ===================================================================== */
-function routeStats(route){
-  // אם יש מסלול אמיתי שמור מ-Google — נשתמש בו, אחרת הערכת דמו
-  const m = route._realMeters || routeWalkMeters(route);
-  const km = m/1000;
-  const steps = metersToSteps(m);
-  return { km, steps, min:kmToWalkMin(km) };
-}
-
-const ROUTE_ICONS = {
-  sea:`<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect width="16" height="16" fill="#1a4fae"/><rect y="6" width="16" height="2" fill="#37e6ff"/><rect y="10" width="16" height="2" fill="#3a82e6"/><rect x="2" y="3" width="3" height="3" fill="#ffd23f"/></svg>`,
-  city:`<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect width="16" height="16" fill="#2b2f5e"/><rect x="2" y="5" width="3" height="9" fill="#cfd8ff"/><rect x="6" y="3" width="3" height="11" fill="#9aa6e0"/><rect x="10" y="7" width="3" height="7" fill="#cfd8ff"/><rect x="3" y="7" width="1" height="1" fill="#ffd23f"/><rect x="7" y="5" width="1" height="1" fill="#ffd23f"/></svg>`
+const TILES = {
+  night:{ url:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+          attr:'&copy; OpenStreetMap &copy; CARTO', sub:'abcd', max:20 },
+  day:  { url:"https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+          attr:'&copy; OpenStreetMap &copy; CARTO', sub:'abcd', max:20 }
 };
 
-function renderRouteCards(){
-  const grid=document.getElementById('route-grid');
-  grid.innerHTML='';
+function initMap(){
+  map = L.map('map', { zoomControl:true, attributionControl:true, center:[32.060,34.766], zoom:14 });
+  for(const k in TILES){
+    baseLayers[k] = L.tileLayer(TILES[k].url, { subdomains:TILES[k].sub, maxZoom:TILES[k].max, attribution:TILES[k].attr });
+  }
+  setBase(state.base, true);
+  routeLayer = L.layerGroup().addTo(map);
+}
+
+function setBase(which, silent){
+  state.base = which; if(!silent) saveState();
+  for(const k in baseLayers){ if(map.hasLayer(baseLayers[k])) map.removeLayer(baseLayers[k]); }
+  baseLayers[which].addTo(map);
+  document.querySelectorAll('[data-base]').forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.base===which)));
+  // הניאון של המסלול בולט על שני הרקעים, אך מתאים את צל ה-CRT
+  document.getElementById('map').style.filter = which==='night' ? 'saturate(1.05)' : 'none';
+}
+
+/* divIcon לאזור */
+function areaIcon(key){
+  const kit = AREA_KITS[key] || { kind:"florentin", emoji:"📍" };
+  return L.divIcon({ className:'', html:`<div class="mk k-${kit.kind}"><span>${kit.emoji}</span></div>`,
+    iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-32], tooltipAnchor:[0,-30] });
+}
+function homeIcon(){
+  return L.divIcon({ className:'', html:`<div class="mk-home"><div class="ring"></div><div class="badge">🏠</div></div>`,
+    iconSize:[46,46], iconAnchor:[23,23], popupAnchor:[0,-24], tooltipAnchor:[0,-26] });
+}
+
+/* =====================================================================
+   6) ניתוב הליכה אמיתי (OSRM foot) + נפילה חיננית לדמו
+   ===================================================================== */
+const OSRM = "https://routing.openstreetmap.de/routed-foot/route/v1/foot/";
+let lastWasDemo = false;
+
+async function getWalkingRoute(points){
+  const coords = points.map(p=>`${p.lng},${p.lat}`).join(';');
+  const url = `${OSRM}${coords}?overview=full&geometries=geojson&continue_straight=false`;
+  const ctrl = new AbortController();
+  const to = setTimeout(()=>ctrl.abort(), 9000);
+  try{
+    const res = await fetch(url, { signal:ctrl.signal });
+    clearTimeout(to);
+    if(!res.ok) throw new Error('http '+res.status);
+    const data = await res.json();
+    if(data.code!=='Ok' || !data.routes?.length) throw new Error(data.code||'no-route');
+    const r = data.routes[0];
+    const latlngs = r.geometry.coordinates.map(c=>[c[1],c[0]]); // [lat,lng]
+    return { latlngs, meters:r.distance, demo:false };
+  }catch(err){
+    clearTimeout(to);
+    // דמו: קווים ישרים בין הנקודות + הערכת מרחק
+    return { latlngs: points.map(p=>[p.lat,p.lng]), meters: demoMetersFromPts(points), demo:true };
+  }
+}
+function demoMetersFromPts(pts){ let d=0; for(let i=1;i<pts.length;i++) d+=haversine(pts[i-1],pts[i]); return d*STREET_FACTOR; }
+
+/* =====================================================================
+   7) ציור המסלול: מסלול ניאון זוהר + נקודה מהלכת + markers
+   ===================================================================== */
+let dashRAF=null, dashOff=0, coreLine=null;
+
+function drawRoute(route, latlngs){
+  routeLayer.clearLayers();
+  stopWalker(); stopDash();
+
+  // שכבות זוהר → ליבה
+  L.polyline(latlngs, { color:'#ffd23f', weight:16, opacity:.12, lineCap:'round', lineJoin:'round' }).addTo(routeLayer);
+  L.polyline(latlngs, { color:'#ffce3a', weight:8,  opacity:.30, lineCap:'round', lineJoin:'round' }).addTo(routeLayer);
+  coreLine = L.polyline(latlngs, { color:'#fff7d6', weight:3.5, opacity:.95, lineCap:'round',
+                                   lineJoin:'round', dashArray:'2 12' }).addTo(routeLayer);
+
+  // markers לעצירות (ללא כפילות הבית)
+  const seen=new Set();
+  route.stops.forEach(key=>{
+    if(key==='home' || seen.has(key)) return; seen.add(key);
+    const p=POI[key];
+    const m = L.marker([p.lat,p.lng], { icon:areaIcon(key) }).addTo(routeLayer);
+    m.bindTooltip(p.name, { className:'tip', direction:'top', offset:[0,-4] });
+    m.bindPopup(`<div class="pop-title">${AREA_KITS[key]?.emoji||''} ${p.name}</div><div class="pop-note">${areaNote(key)}</div>`);
+  });
+  // בית (Spawn) — תמיד
+  const hm = L.marker([HOME.lat,HOME.lng], { icon:homeIcon(), zIndexOffset:1000 }).addTo(routeLayer);
+  hm.bindTooltip('הבית שלי · החלוצים 48', { className:'tip tip-home', direction:'top', permanent:false, offset:[0,-6] });
+  hm.bindPopup(`<div class="pop-title">🏠 הבית שלי</div><div class="pop-note">${areaNote('home')}</div>`);
+
+  map.fitBounds(L.latLngBounds(latlngs).pad(0.12), { animate:true });
+  animateDash(); startWalker(latlngs);
+}
+
+function animateDash(){
+  function step(){ dashOff-=0.6; if(coreLine) coreLine.setStyle({ dashOffset:String(dashOff) }); dashRAF=requestAnimationFrame(step); }
+  dashRAF=requestAnimationFrame(step);
+}
+function stopDash(){ if(dashRAF) cancelAnimationFrame(dashRAF); dashRAF=null; }
+
+/* נקודה זוהרת שמהלכת לאורך המסלול — מראה כיוון הליכה */
+function startWalker(latlngs){
+  if(latlngs.length<2) return;
+  const cum=[0]; let total=0;
+  for(let i=1;i<latlngs.length;i++){
+    total += haversine({lat:latlngs[i-1][0],lng:latlngs[i-1][1]},{lat:latlngs[i][0],lng:latlngs[i][1]});
+    cum.push(total);
+  }
+  const icon=L.divIcon({ className:'', html:'<div class="walker"></div>', iconSize:[14,14], iconAnchor:[7,7] });
+  walkerMarker = L.marker(latlngs[0], { icon, interactive:false, zIndexOffset:900 }).addTo(routeLayer);
+  const speed = total/14000; // הקפה ~14ש'
+  let t0=null;
+  function frame(ts){
+    if(!t0) t0=ts;
+    let d = ((ts-t0)*speed) % total;
+    let i=1; while(i<cum.length && cum[i]<d) i++;
+    const a=latlngs[i-1], b=latlngs[i]||latlngs[i-1];
+    const seg=(cum[i]-cum[i-1])||1, f=(d-cum[i-1])/seg;
+    walkerMarker.setLatLng([ a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f ]);
+    walkerRAF=requestAnimationFrame(frame);
+  }
+  walkerRAF=requestAnimationFrame(frame);
+}
+function stopWalker(){ if(walkerRAF) cancelAnimationFrame(walkerRAF); walkerRAF=null; if(walkerMarker){ try{routeLayer.removeLayer(walkerMarker);}catch(e){} walkerMarker=null; } }
+
+/* =====================================================================
+   8) הפעלת מסלול
+   ===================================================================== */
+const cache = {}; // route.id -> {latlngs, meters, demo}
+
+async function startRoute(route){
+  state.activeRouteId=route.id; saveState();
+  renderCards();
+  toast(`טוען מסלול: <b>${route.name}</b> …`);
+  document.querySelector('.map-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+  let data = cache[route.id];
+  if(!data){ data = await getWalkingRoute(routePoints(route)); if(!data.demo) cache[route.id]=data; }
+  lastWasDemo = data.demo;
+  drawRoute(route, data.latlngs);
+  updateHud(route, data);
+  updateDataNote(data.demo);
+  fitNote(route, data.meters);
+  renderCards(); // לרענן מרחקים אמיתיים בכרטיסים
+  toast(data.demo
+    ? `⚠️ מצב דמו (אין חיבור לניתוב) — מוצג מסלול מקורב`
+    : `מסלול פעיל: <b>${route.name}</b> 🥾`);
+}
+
+function updateHud(route, data){
+  const km=data.meters/1000;
+  document.getElementById('hud-name').textContent=route.name;
+  document.getElementById('hud-km').textContent=km.toFixed(1);
+  document.getElementById('hud-steps').textContent=metersToSteps(data.meters).toLocaleString('he-IL');
+  document.getElementById('hud-min').textContent=kmToWalkMin(km);
+}
+function updateDataNote(demo){
+  const el=document.getElementById('data-note'), pill=document.getElementById('live-pill');
+  if(demo){ el.classList.add('demo'); el.textContent='מצב דמו · מסלול מקורב (אין חיבור לניתוב)';
+            pill.className='demo-pill'; pill.textContent='מצב דמו'; }
+  else{ el.classList.remove('demo'); el.textContent='מפה: OpenStreetMap · ניתוב הליכה: OSRM';
+        pill.className='live-pill'; pill.textContent='נתונים אמיתיים · OSM'; }
+}
+
+/* התאמת אורך ליעד הצעדים */
+function fitNote(route, meters){
+  const note=document.getElementById('fit-note');
+  const steps=metersToSteps(meters), target=state.steps, diff=(steps-target)/target;
+  let cls='ok', html=`✅ המסלול מתאים ליעד שלך (${target.toLocaleString('he-IL')} צעדים): כ-${steps.toLocaleString('he-IL')} צעדים.`;
+  if(diff < -0.12){ cls='short'; html=`↗️ המסלול קצר מהיעד (כ-${steps.toLocaleString('he-IL')} מתוך ${target.toLocaleString('he-IL')}). הצעה: הוסיפו לולאה לאורך הטיילת או סיבוב נוסף בשוק כדי להאריך.`; }
+  else if(diff > 0.12){ cls='long'; html=`↘️ המסלול ארוך מהיעד (כ-${steps.toLocaleString('he-IL')} מתוך ${target.toLocaleString('he-IL')}). הצעה: דלגו על עצירה (למשל נמל יפו) או חזרו ישירות דרך הרצל כדי לקצר.`; }
+  note.className='fit-note show '+cls; note.innerHTML=html;
+}
+
+/* =====================================================================
+   9) כרטיסי מסלולים
+   ===================================================================== */
+function routeStats(route){
+  const data=cache[route.id];
+  const m = data? data.meters : demoMeters(route);
+  const km=m/1000;
+  return { km, steps:metersToSteps(m), min:kmToWalkMin(km), demo:data?data.demo:true, computed:!!data };
+}
+
+function renderCards(){
+  const grid=document.getElementById('route-grid'); grid.innerHTML='';
   ROUTES.forEach(route=>{
     const st=routeStats(route);
-    const isActive=state.activeRouteId===route.id;
-    const isSaved=state.saved.includes(route.id);
+    const isActive=state.activeRouteId===route.id, isSaved=state.saved.includes(route.id);
     const card=document.createElement('div');
-    card.className='route-card pixel-box'+(isActive?' active':'');
+    card.className='route-card glass'+(isActive?' active':'');
     card.innerHTML=`
       <div class="rc-head">
-        <div class="rc-icon">${ROUTE_ICONS[route.icon]||ROUTE_ICONS.city}</div>
-        <div>
-          <h3>${route.name}</h3>
-          <div class="rc-type">אופי: ${route.char}</div>
-        </div>
+        <div class="rc-icon">${route.emoji}</div>
+        <div><h3>${route.name}</h3><div class="rc-type">${route.char}</div></div>
       </div>
       <div class="rc-stats">
-        <div class="rc-stat"><div class="v">${st.km.toFixed(1)}</div><div class="k">ק״מ</div></div>
+        <div class="rc-stat"><div class="v">${st.km.toFixed(1)}</div><div class="k">ק״מ${st.computed?'':' (משוער)'}</div></div>
         <div class="rc-stat"><div class="v">${st.min}</div><div class="k">דק׳ הליכה</div></div>
-        <div class="rc-stat"><div class="v">${st.steps.toLocaleString('he-IL')}</div><div class="k">צעדים משוער</div></div>
-        <div class="rc-stat"><div class="v"><span class="rc-diff ${route.diff==='easy'?'easy':route.diff==='long'?'long':'mid'}">${DIFF_LABEL[route.diff]}</span></div><div class="k">רמת קושי</div></div>
+        <div class="rc-stat"><div class="v">${st.steps.toLocaleString('he-IL')}</div><div class="k">צעדים</div></div>
+        <div class="rc-stat"><div class="v"><span class="rc-diff ${route.diff}">${DIFF_LABEL[route.diff]}</span></div><div class="k">רמת קושי</div></div>
       </div>
-      <div class="rc-stops"><b>עצירות בדרך:</b> <span style="font-size:11px">(הקישו על עצירה לפרטים)</span>
-        <div class="chain">${route.stops.map(k=>
-          `<span data-stop="${k}" title="${(areaNote(k)||'').replace(/"/g,'&quot;')}">${POI[k].name}</span>`
-        ).join('')}</div>
+      <div class="rc-stops"><b>עצירות בדרך:</b>
+        <div class="chain">${route.stops.map(k=>`<span data-stop="${k}">${POI[k].name}</span>`).join('')}</div>
       </div>
       <div class="rc-actions">
         <button class="b-start" data-act="start">▶ התחל מסלול</button>
@@ -1066,289 +719,103 @@ function renderRouteCards(){
     card.querySelector('[data-act="gmap"]').onclick=()=>openInGoogleMaps(route);
     card.querySelector('[data-act="save"]').onclick=()=>toggleSave(route);
     card.querySelectorAll('[data-stop]').forEach(el=>{
-      el.style.cursor='pointer';
-      el.onclick=()=>toast('📍 '+POI[el.dataset.stop].name+' — '+areaNote(el.dataset.stop));
+      el.onclick=()=>{
+        const k=el.dataset.stop;
+        toast(`<b>${AREA_KITS[k]?.emoji||'📍'} ${POI[k].name}</b> — ${areaNote(k)}`);
+        if(state.activeRouteId===route.id && map){ map.panTo([POI[k].lat,POI[k].lng], {animate:true}); }
+      };
     });
     grid.appendChild(card);
   });
 }
 
 /* =====================================================================
-   9) פעולות מסלול
+   10) פעולות: גוגל מפות, שמירה, "מצא לי מסלול"
    ===================================================================== */
-function activeRoute(){ return ROUTES.find(r=>r.id===state.activeRouteId) || null; }
-
-// טעינת מסלול אמיתי מ-Google למסלול הפעיל (נקרא גם מ-startRoute וגם מ-setView, ללא רקורסיה)
-async function loadDirectionsForActive(){
-  const route=activeRoute(); if(!route) return;
-  if(googleReady && state.view!=='pixel'){
-    try{
-      const res=await requestDirections(route);
-      directionsRenderer.setDirections(res);
-      let meters=0; res.routes[0].legs.forEach(l=>meters+=l.distance.value);
-      route._realMeters=meters; // אורך הליכה אמיתי
-      const path=res.routes[0].overview_path.map(ll=>({lat:ll.lat(),lng:ll.lng()}));
-      setActiveRoutePts(path); // נקודות הקו לשכבת הפיקסל
-      renderRouteCards(); fitNote(route);
-    }catch(err){
-      showRouteError(err);
-      setActiveRoutePts(routePoints(route)); // נפילה חיננית
-    }
-  }else{
-    setActiveRoutePts(routePoints(route));
-  }
-}
-
-async function startRoute(route){
-  state.activeRouteId=route.id; saveState();
-  setActiveRoutePts(routePoints(route)); // ציור מיידי לפי נקודות העצירה
-  renderRouteCards();
-  fitNote(route);
-  setView(state.view);   // מטפל בטעינת Directions במצבי Google + ציור מחדש
-  toast(`התחלת מסלול: ${route.name} 🥾`);
-  document.querySelector('.map-card').scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-function showRouteError(status){
-  const map={
-    'ZERO_RESULTS':'לא נמצא מסלול הליכה בין הנקודות. נסו סוג מסלול אחר.',
-    'OVER_QUERY_LIMIT':'חרגתם ממכסת הבקשות ל-Google Maps. נסו שוב מאוחר יותר.',
-    'REQUEST_DENIED':'הבקשה נדחתה — בדקו שה-Directions API מופעל ושהמפתח תקין.',
-    'INVALID_REQUEST':'בקשת מסלול לא תקינה.',
-    'UNKNOWN_ERROR':'שגיאה זמנית ב-Google Maps. נסו שוב.'
-  };
-  toast('⚠️ '+(map[status]||('שגיאת מסלול: '+status)));
-}
-
-/* התאמת אורך ליעד הצעדים — הצעת הארכה/קיצור */
-function fitNote(route){
-  const note=document.getElementById('fit-note');
-  const st=routeStats(route);
-  const target=state.steps;
-  const diffPct=(st.steps-target)/target;
-  let cls='ok', html=`✅ המסלול מתאים ליעד שלך (${target.toLocaleString('he-IL')} צעדים): כ-${st.steps.toLocaleString('he-IL')} צעדים.`;
-  if(diffPct < -0.12){
-    cls='short';
-    html=`↗️ המסלול קצר מהיעד (כ-${st.steps.toLocaleString('he-IL')} מתוך ${target.toLocaleString('he-IL')} צעדים). הצעה: הוסיפו לולאה לאורך הטיילת או סיבוב נוסף בשוק הכרמל כדי להאריך.`;
-  }else if(diffPct > 0.12){
-    cls='long';
-    html=`↘️ המסלול ארוך מהיעד (כ-${st.steps.toLocaleString('he-IL')} מתוך ${target.toLocaleString('he-IL')} צעדים). הצעה: דלגו על עצירה אחת (למשל נמל יפו) או חזרו ישירות דרך הרצל כדי לקצר.`;
-  }
-  note.className='fit-note show '+cls; note.innerHTML=html;
-}
-
-/* פתיחה בגוגל מפות עם כל ה-waypoints (הליכה) */
 function openInGoogleMaps(route){
   const pts=routePoints(route);
-  const o=`${pts[0].lat},${pts[0].lng}`;
-  const d=`${pts[pts.length-1].lat},${pts[pts.length-1].lng}`;
+  const o=`${pts[0].lat},${pts[0].lng}`, d=`${pts[pts.length-1].lat},${pts[pts.length-1].lng}`;
   const wp=pts.slice(1,-1).map(p=>`${p.lat},${p.lng}`).join('|');
-  const url=`https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&travelmode=walking`+
-            (wp?`&waypoints=${encodeURIComponent(wp)}`:'');
+  const url=`https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&travelmode=walking`+(wp?`&waypoints=${encodeURIComponent(wp)}`:'');
   window.open(url,'_blank','noopener');
 }
-
 function toggleSave(route){
   const i=state.saved.indexOf(route.id);
-  if(i>=0){ state.saved.splice(i,1); toast('הוסר מהשמורים'); }
-  else{ state.saved.push(route.id); toast('★ המסלול נשמר'); }
-  saveState(); renderRouteCards();
+  if(i>=0){ state.saved.splice(i,1); toast('הוסר מהשמורים'); } else { state.saved.push(route.id); toast('★ המסלול נשמר'); }
+  saveState(); renderCards();
 }
-
-/* =====================================================================
-   10) "מצא לי מסלול" — בחירת המסלול המתאים לפי ההגדרות
-   ===================================================================== */
 function findRoute(){
-  // ניקוד לפי סוג + יעד צעדים + העדפות
   let best=null, bestScore=-1e9;
   ROUTES.forEach(r=>{
-    let score=0;
-    if(r.type===state.type) score+=50;
-    if(state.type==='mixed') score+=15;
-    if(state.type==='sea' && (r.id==='sea-jaffa'||r.id==='florentin-nevetzedek-sea')) score+=25;
-    if(state.type==='jaffa' && r.id==='sea-jaffa') score+=40;
-    if(state.type==='urban' && r.id==='urban-easy') score+=40;
-    if(state.type==='green') score+= r.stops.includes('mesila')||r.stops.includes('charlesClore')?20:0;
-    if(state.type==='night' && r.diff!=='long') score+=15;
-    // קרבה ליעד הצעדים
-    const st=routeStats(r);
-    score -= Math.abs(st.steps-state.steps)/200;
-    // העדפת ים
-    if(state.prefs.sea && (r.stops.includes('bananaBeach')||r.stops.includes('charlesClore'))) score+=15;
-    if(state.prefs.quiet && r.id==='florentin-nevetzedek-sea') score+=8;
-    if(state.prefs.cafe && (r.stops.includes('rothschild')||r.stops.includes('neveTzedek'))) score+=8;
-    if(score>bestScore){ bestScore=score; best=r; }
+    let s=0;
+    if(r.type===state.type) s+=50;
+    if(state.type==='mixed') s+=15;
+    if(state.type==='sea' && (r.id==='sea-jaffa'||r.id==='florentin-nevetzedek-sea')) s+=25;
+    if(state.type==='jaffa' && r.id==='sea-jaffa') s+=40;
+    if(state.type==='urban' && r.id==='urban-easy') s+=40;
+    if(state.type==='green' && (r.stops.includes('mesila')||r.stops.includes('charlesClore'))) s+=20;
+    if(state.type==='night' && r.diff!=='long') s+=15;
+    s -= Math.abs(routeStats(r).steps-state.steps)/200;
+    if(state.prefs.sea && (r.stops.includes('bananaBeach')||r.stops.includes('charlesClore'))) s+=15;
+    if(state.prefs.quiet && r.id==='florentin-nevetzedek-sea') s+=8;
+    if(state.prefs.cafe && (r.stops.includes('rothschild')||r.stops.includes('neveTzedek'))) s+=8;
+    if(s>bestScore){ bestScore=s; best=r; }
   });
   if(best) startRoute(best);
 }
 
 /* =====================================================================
-   11) תצוגה (פיקסל / משולב / גוגל) + ציור מחדש
+   11) חיווט UI
    ===================================================================== */
-function setView(view){
-  state.view=view; saveState();
-  document.querySelectorAll('.map-toolbar .seg button').forEach(b=>
-    b.setAttribute('aria-pressed', String(b.dataset.view===view)));
-  const gmapEl=document.getElementById('gmap');
-  const msg=document.getElementById('map-msg');
-  msg.classList.remove('show');
-
-  if(view==='pixel'){
-    gmapEl.style.display='none';
-    cvs.style.display='block'; cvs.style.opacity='1';
-    project=projLocal;
-  }else{
-    if(!hasKey){
-      // אין מפתח: גוגל/משולב לא זמינים — הסבר ברור, נשארים על פיקסל
-      gmapEl.style.display='none';
-      if(view==='google'){
-        cvs.style.display='none';
-        msg.classList.add('show');
-        msg.innerHTML=`<div><h3 style="color:var(--gold)">מצב דמו</h3>
-          <p>תצוגת Google רגילה דורשת מפתח API.<br>
-          החליפו בקוד את <code style="color:var(--cyan)">PASTE_GOOGLE_MAPS_API_KEY_HERE</code> במפתח שלכם.</p>
-          <p style="color:var(--ink-dim)">בינתיים — תצוגת הפיקסל ארט פעילה.</p></div>`;
-      }else{ // combined ללא מפתח -> פיקסל בלבד
-        cvs.style.display='block'; project=projLocal;
-      }
-    }else{
-      gmapEl.style.display='block';
-      if(view==='google'){ cvs.style.display='none'; }
-      else{ cvs.style.display='block'; } // combined: canvas שקוף מעל
-      // הפעלת overlay תצייר עם projection של גוגל
-      if(googleReady && pixelOverlay) pixelOverlay.draw();
-      // אם יש מסלול פעיל — נטען Directions ונצייר (ללא רקורסיה ל-startRoute)
-      if(activeRoute() && googleReady && view!=='pixel') loadDirectionsForActive().then(redraw);
-    }
-  }
-  redraw();
-}
-
-function redraw(){
-  if(project===projLocal){
-    resizeCanvas();
-    renderPixel(activeRoute());
-  }else if(pixelOverlay && state.view==='combined'){
-    pixelOverlay.draw();
-  }
-}
-
-/* לולאת אנימציה עדינה (גלים + שביל זוהר) */
-function animLoop(){
-  waveT+=0.5;
-  if(project===projLocal && state.view!=='google'){
-    renderPixel(activeRoute());
-  }
-  requestAnimationFrame(animLoop);
-}
-
-/* =====================================================================
-   12) חיווט ה-UI
-   ===================================================================== */
-function wireChips(groupId, key, multi){
-  const grp=document.getElementById(groupId);
+function wireChips(id, key){
+  const grp=document.getElementById(id);
   grp.querySelectorAll('.chip').forEach(ch=>{
-    ch.addEventListener('click',()=>{
+    ch.onclick=()=>{
       grp.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
       ch.setAttribute('aria-pressed','true');
-      const v=ch.dataset.val;
-      state[key]= (key==='steps')? parseInt(v,10) : v;
+      state[key]= key==='steps'? parseInt(ch.dataset.val,10) : ch.dataset.val;
       saveState();
-    });
+      if(key==='steps' && state.activeRouteId){ const r=ROUTES.find(x=>x.id===state.activeRouteId); const d=cache[r.id]; if(d) fitNote(r,d.meters); }
+    };
   });
 }
-
 function applyStateToUI(){
-  // chips
-  const setChip=(id,val)=>{
-    document.querySelectorAll(`#${id} .chip`).forEach(c=>
-      c.setAttribute('aria-pressed', String(String(c.dataset.val)===String(val))));
-  };
-  setChip('steps-chips', state.steps);
-  setChip('type-chips', state.type);
-  setChip('diff-chips', state.diff);
-  // toggles
+  const setChip=(id,val)=>document.querySelectorAll(`#${id} .chip`).forEach(c=>
+    c.setAttribute('aria-pressed', String(String(c.dataset.val)===String(val))));
+  setChip('steps-chips',state.steps); setChip('type-chips',state.type); setChip('diff-chips',state.diff);
   document.getElementById('tg-loop').checked=state.loop;
   document.getElementById('tg-lit').checked=state.lit;
-  // prefs
-  document.querySelectorAll('.prefs input').forEach(inp=>{
-    inp.checked=!!state.prefs[inp.dataset.pref];
-  });
-  // view
-  document.querySelectorAll('.map-toolbar .seg button').forEach(b=>
-    b.setAttribute('aria-pressed', String(b.dataset.view===state.view)));
+  document.querySelectorAll('.prefs input').forEach(i=> i.checked=!!state.prefs[i.dataset.pref]);
 }
-
 function wireUI(){
-  wireChips('steps-chips','steps');
-  wireChips('type-chips','type');
-  wireChips('diff-chips','diff');
-
+  wireChips('steps-chips','steps'); wireChips('type-chips','type'); wireChips('diff-chips','diff');
   document.getElementById('tg-loop').onchange=e=>{ state.loop=e.target.checked; saveState(); };
   document.getElementById('tg-lit').onchange=e=>{ state.lit=e.target.checked; saveState(); };
-  document.querySelectorAll('.prefs input').forEach(inp=>{
-    inp.onchange=()=>{ state.prefs[inp.dataset.pref]=inp.checked; saveState(); };
-  });
-
+  document.querySelectorAll('.prefs input').forEach(i=> i.onchange=()=>{ state.prefs[i.dataset.pref]=i.checked; saveState(); });
   document.getElementById('find-btn').onclick=findRoute;
-
-  document.querySelectorAll('.map-toolbar .seg button').forEach(b=>{
-    b.onclick=()=>setView(b.dataset.view);
-  });
-
-  window.addEventListener('resize', ()=>{ if(project===projLocal) redraw(); });
+  document.querySelectorAll('[data-base]').forEach(b=> b.onclick=()=>setBase(b.dataset.base));
 }
 
-/* =====================================================================
-   13) Toast
-   ===================================================================== */
+/* toast */
 let toastTimer=null;
 function toast(msg){
-  const t=document.getElementById('toast-t');
-  t.textContent=msg; t.classList.add('show');
+  const t=document.getElementById('toast-t'); t.innerHTML=msg; t.classList.add('show');
   clearTimeout(toastTimer);
-  const dur = Math.min(8000, 2600 + msg.length*45); // הודעות ארוכות נשארות יותר
-  toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
+  const plain=t.textContent||''; toastTimer=setTimeout(()=>t.classList.remove('show'), Math.min(8000, 2600+plain.length*45));
 }
 
 /* =====================================================================
-   14) אתחול
+   12) אתחול
    ===================================================================== */
-function setDemoUI(demo){
-  document.getElementById('demo-pill').style.display = demo?'inline-block':'none';
-  document.getElementById('demo-banner').style.display = demo?'block':'none';
-  document.getElementById('mode-label').textContent = demo?'דמו':'מחובר ל-Google Maps';
-}
-
-async function init(){
+function init(){
   loadState();
   applyStateToUI();
   wireUI();
-  resizeCanvas();
-  renderRouteCards();
-
-  if(hasKey){
-    setDemoUI(false);
-    try{
-      await loadGoogle();
-      initGoogle();
-    }catch(e){
-      setDemoUI(true);
-      toast('⚠️ טעינת Google Maps נכשלה — עברנו למצב דמו');
-    }
-  }else{
-    setDemoUI(true);
-  }
-
-  // ברירת מחדל: מסלול פעיל ראשון, ואז החלת התצוגה השמורה
+  initMap();
+  renderCards();
   state.activeRouteId = state.activeRouteId || ROUTES[0].id;
-  setActiveRoutePts(routePoints(activeRoute()));
-  fitNote(activeRoute());
-  renderRouteCards();
-  setView(state.view || 'pixel');   // יטען Directions אם במצב Google + יצייר מחדש
-  animLoop();
+  startRoute(ROUTES.find(r=>r.id===state.activeRouteId)); // טוען מסלול אמיתי ומצייר
 }
-
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
