@@ -40,6 +40,10 @@ enhance in tested increments, never ship a broken tree.
 - [x] Full-width gold-emblem header title up to the action buttons.
 - [x] Smoke-tested in headless Chromium: title = "Ran Hub", splash hides, nav renders, no app JS errors (only sandbox font fetch fails, which the SW handles gracefully online).
 
+## Status: revamp roadmap complete
+
+All planned increments (#1–#6) and the cross-cutting spec areas (§17 return, §18 completion feedback, §19 performance, §20 accessibility, §21 data safety, §22 install, Phase 7 support systems) are implemented, headless-tested, committed, and deployed to the branch preview. Remaining known non-goals: weekly task repeat (deferred), a deep global CSS-token rewrite (intentionally skipped for regression safety), and a formal contrast audit. On-device (Pixel 7 / iOS) verification is the outstanding manual step before merge to production.
+
 ## Migration / risk notes
 
 - **No storage-key change.** Still `ttg_v2`; all existing user data loads unchanged. Any new fields will be added via `defaultState()` merge (non-destructive) — never rename/drop existing fields.
@@ -54,6 +58,10 @@ enhance in tested increments, never ship a broken tree.
 4. ~~**Task attribute expansion**~~ ✅ shipped — tasks gain optional `priority` (high/normal/low), `due` (date), `energy` (low/med/high), `repeat` (daily/once). Non-destructive: `normalizeTasks()` fills defaults for any legacy task on load. Editor modal gets priority/due/repeat/energy controls. Rows show meta badges (due w/ overdue state, once, high-priority, low-energy) + priority accent, and every list is `sortTasks()`-ordered (undone → priority → due). One-off (`once`) tasks completed on a day are archived (already in the log) and retired at rollover. Weekly repeat deferred (needs per-task rest tracking). Reward-link lives on the Daily Quest for now.
 5. ~~**Centralized XP config + duplicate-award guard**~~ ✅ shipped — single `XP` table (`quickAction`/`sub`/`project`) now feeds music quick-actions and the project constants (`SUB_XP`/`PROJECT_XP`). Duplicate-award guard verified (re-toggle 0→30→0, no double-award; `doneToday` gate). Also added the **floating "+N XP"** completion primitive (rises from the tapped element, 1000ms, reduced-motion aware, self-cleaning) — the plan's outstanding "floating +XP near item" feedback item.
 6. ~~**Design-token pass**~~ ✅ shipped (safe scope) — added a documented spacing scale (`--s1..--s6`) and a z-index tier system (`--z-bg…--z-splash`) to `:root`, and adopted the z-index tokens across every global stacking layer (bg, grain, header, nav, fx, toast, modal, quiz, level-up, splash) with **identical numeric values** (verified: zero visual change). A deeper global rewrite of the hundreds of existing rules was intentionally skipped — high regression risk on the working UI for no user-visible gain.
+
+## Support systems (Phase 7) — shipped
+
+- [x] **Rest / low-energy mode** — a Home toggle (`S.rest`) that narrows the day to low-energy tasks + the Daily Quest minimum, with calm, non-judgmental copy and an SR announcement. Builds on the task `energy` attribute. Reward Vault, smoke-free sessions, and Music/Studio mode were delivered earlier; the low-energy recovery flow completes the phase.
 
 ## Performance (§19) — shipped
 
