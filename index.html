@@ -141,6 +141,15 @@ main{flex:1;padding:14px 14px 6px}
 .trow{display:flex;align-items:center;gap:11px;padding:12px 2px;border-bottom:2px dashed var(--line-soft)}
 .trow:last-child{border-bottom:none}
 .trow.done .ttitle{text-decoration:line-through;color:var(--ink-faint)}
+.trow.prio-high{background:linear-gradient(90deg,rgba(224,48,127,.07),transparent);border-radius:9px;padding-inline:8px}
+.trow.prio-low{opacity:.72}
+.tmeta{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.tbadge{font-family:'Heebo';font-weight:700;font-size:10px;padding:2px 7px;border-radius:8px;background:var(--card-2);border:1px solid var(--line-soft);color:var(--ink-dim);line-height:1.55}
+.tbadge.due{color:var(--cyan);border-color:rgba(10,159,196,.3)}
+.tbadge.due.over{color:var(--magenta);border-color:rgba(224,48,127,.4);background:rgba(224,48,127,.08)}
+.tbadge.once{color:var(--orange);border-color:rgba(232,119,26,.3)}
+.tbadge.hi{color:var(--magenta);border-color:rgba(224,48,127,.35)}
+.tbadge.en{color:var(--ink-dim)}
 .cbox{flex:none;width:28px;height:28px;border-radius:6px;border:2px solid var(--purple);background:#fff;display:grid;place-items:center;cursor:pointer;transition:.15s;order:0;box-shadow:2px 2px 0 rgba(124,58,237,.2)}
 .cbox svg{width:16px;height:16px;opacity:0;transform:scale(.4);transition:.18s;color:#fff}
 .trow.done .cbox{background:var(--cyan);border-color:var(--cyan)}
@@ -931,6 +940,25 @@ select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--lin
     </div>
     <label class="fld">EXP</label>
     <input type="number" id="tmExp" value="25" min="5" max="150" step="5">
+    <label class="fld">עדיפות</label>
+    <div class="seg" id="tmPrio" style="margin-bottom:0;box-shadow:none">
+      <button data-p="high">גבוהה</button>
+      <button data-p="normal" class="on">רגילה</button>
+      <button data-p="low">נמוכה</button>
+    </div>
+    <label class="fld">תאריך יעד (אופציונלי)</label>
+    <input type="date" id="tmDue">
+    <label class="fld">חזרה</label>
+    <div class="seg" id="tmRepeat" style="margin-bottom:0;box-shadow:none">
+      <button data-r="daily" class="on">כל יום</button>
+      <button data-r="once">חד-פעמי</button>
+    </div>
+    <label class="fld">אנרגיה נדרשת</label>
+    <div class="seg" id="tmEnergy" style="margin-bottom:0;box-shadow:none">
+      <button data-e="low">נמוכה</button>
+      <button data-e="med" class="on">בינונית</button>
+      <button data-e="high">גבוהה</button>
+    </div>
     <label class="fld">תווית</label>
     <input type="text" id="tmTag" placeholder="למשל: בריאות">
     <label class="fld">צבע תווית</label>
@@ -1066,6 +1094,9 @@ const COLORS=['#7c3aed','#0a9fc4','#e0307f','#3aa83a','#e8771a','#5a63d8'];
 
 /* ===== CONFIG ===== */
 const EXP_PER_LEVEL=80;
+const PRIO={high:{n:'גבוהה',o:0,c:'#e0307f'},normal:{n:'רגילה',o:1,c:'#7c3aed'},low:{n:'נמוכה',o:2,c:'#0a9fc4'}};
+const ENERGY={low:'אנרגיה נמוכה',med:'בינונית',high:'גבוהה'};
+const REPEATS={daily:'כל יום',once:'חד-פעמי'};
 const RANKS=[{n:'מתחיל',l:1},{n:'ניצן',l:3},{n:'בתנועה',l:5},{n:'מתעורר',l:8},{n:'בפוקוס',l:10},{n:'מתמיד',l:13},{n:'יציב',l:15},{n:'נחוש',l:18},{n:'יוצר',l:20},{n:'ממוקד',l:23},{n:'מתקדם',l:25},{n:'מנוסה',l:28},{n:'חזק בקצב',l:30},{n:'אלוף הרגלים',l:35},{n:'מקצוען',l:40},{n:'וירטואוז',l:45},{n:'אמן הפוקוס',l:50},{n:'מאסטר',l:60},{n:'גיבור על',l:70},{n:'בלתי ניתן לעצירה',l:80},{n:'אגדה',l:90},{n:'אגדה חיה',l:100}];
 const WIN_CHIPS=['קמתי','אכלתי משהו','יצאתי החוצה','שתיתי מים','נגעתי בכלי','עניתי להודעה','התקלחתי','עשיתי משהו אחד'];
 const DEFAULT_TASKS=[
@@ -1115,11 +1146,14 @@ function defaultState(){return{
   ]
 };}
 let S=load();
-function load(){try{const r=JSON.parse(localStorage.getItem('ttg_v2'));if(r&&r.tasks)return Object.assign(defaultState(),r);}catch(e){}return defaultState();}
+function normalizeTasks(s){(s.tasks||[]).forEach(t=>{if(!t.priority)t.priority='normal';if(t.due===undefined||t.due===null)t.due='';if(!t.energy)t.energy='med';if(!t.repeat)t.repeat='daily';});}
+function load(){let s;try{const r=JSON.parse(localStorage.getItem('ttg_v2'));s=(r&&r.tasks)?Object.assign(defaultState(),r):defaultState();}catch(e){s=defaultState();}normalizeTasks(s);return s;}
 function save(){localStorage.setItem('ttg_v2',JSON.stringify(S));}
 function rollover(){const t=todayStr();if(S.day===t)return;
   // archive the day that just ended so daily history is retained
   S.hist[S.day]={cigs:S.cigs.length,weed:S.weed.kept,genshin:S.genshin.kept,mood:S.checkin.mood,energy:S.checkin.energy,focus:S.checkin.focus,note:S.checkin.note,music:S.checkin.music,helped:S.checkin.helped,done:S.doneToday.length};
+  // one-off tasks completed on the day that just ended are archived (already in log) and retired
+  S.tasks=S.tasks.filter(x=>!(x.repeat==='once'&&S.doneToday.includes(x.id)));
   S.day=t;S.doneToday=[];S.cigs=[];S.weed.kept=false;S.genshin.kept=false;S.checkin={mood:null,energy:5,focus:5,note:'',music:'',helped:''};save();}
 
 /* ===== LEVEL / RANK ===== */
@@ -1161,9 +1195,21 @@ function logQuick(label,exp,ev){S.log.unshift({id:'c'+Date.now(),taskId:null,tit
 function renderHeader(){const l=levelOf(S.totalExp),inl=expInLevel(S.totalExp);document.getElementById('hLvl').textContent=l;document.getElementById('hRank').textContent=rankFor(l).n;document.getElementById('hExpTxt').textContent=inl+' / '+EXP_PER_LEVEL;document.getElementById('hExpBar').style.width=(inl/EXP_PER_LEVEL*100)+'%';}
 
 function tagStyle(c){return `background:${c}`;}
-function taskRow(t,editing){const done=S.doneToday.includes(t.id);return `<div class="trow ${done?'done':''} ${editing?'editing':''}" data-id="${t.id}">
+function fmtDue(ds){const t=todayStr();if(ds===t)return 'היום';if(ds===shift(t,1))return 'מחר';if(ds===shift(t,-1))return 'אתמול';const p=ds.split('-');return p[2]+'/'+p[1];}
+function taskMeta(t){const b=[];
+  if(t.due){const over=t.due<todayStr();b.push(`<span class="tbadge due ${over?'over':''}">${over?'⚠ ':'📅 '}${fmtDue(t.due)}</span>`);}
+  if(t.repeat==='once')b.push('<span class="tbadge once">חד-פעמי</span>');
+  if(t.priority==='high')b.push('<span class="tbadge hi">עדיפות גבוהה</span>');
+  if(t.energy==='low')b.push('<span class="tbadge en">אנרגיה נמוכה</span>');
+  return b.length?`<div class="tmeta">${b.join('')}</div>`:'';}
+function prioClass(t){return t.priority==='high'?'prio-high':t.priority==='low'?'prio-low':'';}
+function sortTasks(arr){return arr.slice().sort((a,b)=>{
+  const ad=S.doneToday.includes(a.id)?1:0,bd=S.doneToday.includes(b.id)?1:0;if(ad!==bd)return ad-bd;
+  const ap=(PRIO[a.priority]||PRIO.normal).o,bp=(PRIO[b.priority]||PRIO.normal).o;if(ap!==bp)return ap-bp;
+  const au=a.due||'9999-99-99',bu=b.due||'9999-99-99';return au<bu?-1:au>bu?1:0;});}
+function taskRow(t,editing){const done=S.doneToday.includes(t.id);return `<div class="trow ${done?'done':''} ${editing?'editing':''} ${prioClass(t)}" data-id="${t.id}">
   <div class="cbox" data-toggle="${t.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg></div>
-  <div class="tmid"><div class="ttitle">${t.title}</div></div>
+  <div class="tmid"><div class="ttitle">${t.title}</div>${taskMeta(t)}</div>
   <div class="tright"><span class="tag" style="${tagStyle(t.tagColor)}">${t.tag}</span><span class="xp2"><b>+${t.exp}</b> EXP</span></div>
   <div class="tedit"><div class="miniIcon" data-edit="${t.id}">${svg('edit')}</div><div class="miniIcon del" data-del="${t.id}">${svg('trash')}</div></div></div>`;}
 
@@ -1203,7 +1249,7 @@ function renderHome(){
 
   // daily missions (shared with tasks tab)
   const hm=document.getElementById('homeMissions');
-  const today=S.tasks.filter(t=>t.cat==='today');
+  const today=sortTasks(S.tasks.filter(t=>t.cat==='today'));
   hm.innerHTML=today.length?today.map(t=>taskRow(t,false)).join(''):'<div class="empty">אין משימות להיום. הוסף אחת ↓</div>';
   bindTaskRows(hm);
 
@@ -1288,11 +1334,11 @@ let editing=false;
 function renderTasks(){
   const cont=document.getElementById('taskSections');
   const groups=[['today','היום'],['music','מוזיקה'],['later','לזכור להמשך']];
-  cont.innerHTML=groups.map(([cat,lab])=>{const items=S.tasks.filter(t=>t.cat===cat);if(!items.length&&!editing)return '';return `<div class="secLabel">${lab}</div><div class="tasklist">${items.map(t=>taskRow(t,editing)).join('')||'<div class="empty" style="padding:10px 0">אין משימות כאן</div>'}</div>`;}).join('');
+  cont.innerHTML=groups.map(([cat,lab])=>{const items=sortTasks(S.tasks.filter(t=>t.cat===cat));if(!items.length&&!editing)return '';return `<div class="secLabel">${lab}</div><div class="tasklist">${items.map(t=>taskRow(t,editing)).join('')||'<div class="empty" style="padding:10px 0">אין משימות כאן</div>'}</div>`;}).join('');
   bindTaskRows(cont);
   document.getElementById('editToggle').innerHTML=editing?`${svg('star')}סיום`:`${svg('edit')}ערוך`;
 }
-function renderMusicTasks(){const c=document.getElementById('musicTasks');const items=S.tasks.filter(t=>t.cat==='music');c.innerHTML=items.map(t=>taskRow(t,false)).join('')||'<div class="empty">אין משימות מוזיקה</div>';bindTaskRows(c);}
+function renderMusicTasks(){const c=document.getElementById('musicTasks');const items=sortTasks(S.tasks.filter(t=>t.cat==='music'));c.innerHTML=items.map(t=>taskRow(t,false)).join('')||'<div class="empty">אין משימות מוזיקה</div>';bindTaskRows(c);}
 function renderMusic(){const qa=document.getElementById('musicQA');qa.innerHTML=MUSIC_QA.map((a,i)=>`<div class="qabtn" data-qa="${i}"><div class="ico">${svg(a.i)}</div><span>${a.t}</span></div>`).join('');qa.querySelectorAll('[data-qa]').forEach(b=>b.onclick=e=>{const a=MUSIC_QA[b.dataset.qa];logQuick(a.t,10,e);});renderMusicTasks();}
 
 function renderProgress(){
@@ -1320,7 +1366,7 @@ function renderCheckin(){const m=document.getElementById('moods');m.innerHTML=MO
 function renderAll(){rollover();renderHeader();renderQuest();renderHome();renderTasks();renderMusic();renderProgress();renderTrain();renderCalendar();renderNotepad();renderHistory();renderProjects();renderRewards();renderSmoke();document.getElementById('overwhelmTg').checked=S.overwhelm;document.getElementById('studioTg').checked=S.studio;document.getElementById('musicIdea').value=S.musicIdea;document.getElementById('btnMute').classList.toggle('muted',S.muted);}
 
 /* ===== TASK MODAL ===== */
-let modalEditId=null,modalCat='today',modalColor=COLORS[0],modalIcon='star';
+let modalEditId=null,modalCat='today',modalColor=COLORS[0],modalIcon='star',modalPrio='normal',modalRepeat='daily',modalEnergy='med';
 function openTaskModal(id,presetCat){
   modalEditId=id||null;const t=id?S.tasks.find(x=>x.id===id):null;
   document.getElementById('tmTitle').textContent=t?'עריכת משימה':'משימה חדשה';
@@ -1329,6 +1375,11 @@ function openTaskModal(id,presetCat){
   document.getElementById('tmTag').value=t?t.tag:'';
   document.getElementById('tmQuick').checked=t?t.quick:false;
   document.getElementById('tmDelete').style.display=id?'flex':'none';
+  modalPrio=(t&&t.priority)||'normal';modalRepeat=(t&&t.repeat)||'daily';modalEnergy=(t&&t.energy)||'med';
+  document.getElementById('tmDue').value=(t&&t.due)||'';
+  document.querySelectorAll('#tmPrio button').forEach(b=>b.classList.toggle('on',b.dataset.p===modalPrio));
+  document.querySelectorAll('#tmRepeat button').forEach(b=>b.classList.toggle('on',b.dataset.r===modalRepeat));
+  document.querySelectorAll('#tmEnergy button').forEach(b=>b.classList.toggle('on',b.dataset.e===modalEnergy));
   modalCat=t?t.cat:(presetCat||'today');modalColor=t?t.tagColor:COLORS[0];modalIcon=t?t.icon:'star';
   document.querySelectorAll('#tmCat button').forEach(b=>b.classList.toggle('on',b.dataset.c===modalCat));
   document.getElementById('tmColors').innerHTML=COLORS.map(c=>`<div class="swatch ${c===modalColor?'sel':''}" data-col="${c}" style="background:${c}"></div>`).join('');
@@ -1338,9 +1389,12 @@ function openTaskModal(id,presetCat){
   document.getElementById('taskModal').classList.add('on');
 }
 document.querySelectorAll('#tmCat button').forEach(b=>b.onclick=()=>{modalCat=b.dataset.c;document.querySelectorAll('#tmCat button').forEach(x=>x.classList.toggle('on',x===b));});
+document.querySelectorAll('#tmPrio button').forEach(b=>b.onclick=()=>{modalPrio=b.dataset.p;document.querySelectorAll('#tmPrio button').forEach(x=>x.classList.toggle('on',x===b));});
+document.querySelectorAll('#tmRepeat button').forEach(b=>b.onclick=()=>{modalRepeat=b.dataset.r;document.querySelectorAll('#tmRepeat button').forEach(x=>x.classList.toggle('on',x===b));});
+document.querySelectorAll('#tmEnergy button').forEach(b=>b.onclick=()=>{modalEnergy=b.dataset.e;document.querySelectorAll('#tmEnergy button').forEach(x=>x.classList.toggle('on',x===b));});
 document.getElementById('tmCancel').onclick=()=>document.getElementById('taskModal').classList.remove('on');
 document.getElementById('tmDelete').onclick=()=>{if(modalEditId&&confirm('למחוק את המשימה?')){S.tasks=S.tasks.filter(x=>x.id!==modalEditId);save();document.getElementById('taskModal').classList.remove('on');renderAll();}};
-document.getElementById('tmSave').onclick=()=>{const name=document.getElementById('tmName').value.trim();if(!name)return;const data={title:name,cat:modalCat,exp:Math.max(5,+document.getElementById('tmExp').value||25),tag:document.getElementById('tmTag').value.trim()||'משימה',tagColor:modalColor,icon:modalIcon,quick:document.getElementById('tmQuick').checked};if(modalEditId){Object.assign(S.tasks.find(x=>x.id===modalEditId),data);}else{data.id='t'+Date.now();S.tasks.push(data);}save();document.getElementById('taskModal').classList.remove('on');renderAll();};
+document.getElementById('tmSave').onclick=()=>{const name=document.getElementById('tmName').value.trim();if(!name)return;const data={title:name,cat:modalCat,exp:Math.max(5,+document.getElementById('tmExp').value||25),tag:document.getElementById('tmTag').value.trim()||'משימה',tagColor:modalColor,icon:modalIcon,quick:document.getElementById('tmQuick').checked,priority:modalPrio,due:document.getElementById('tmDue').value||'',repeat:modalRepeat,energy:modalEnergy};if(modalEditId){Object.assign(S.tasks.find(x=>x.id===modalEditId),data);}else{data.id='t'+Date.now();S.tasks.push(data);}save();document.getElementById('taskModal').classList.remove('on');renderAll();};
 
 /* ===== EVENTS ===== */
 function switchView(tab){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));const el=document.getElementById('v-'+tab);if(el)el.classList.add('on');if(tab==='progress')renderProgress();if(tab==='checkin')renderCheckin();if(tab==='train')renderTrain();if(tab==='cal')renderCalendar();if(tab==='pad')renderNotepad();if(tab==='hist')renderHistory();if(tab==='projects')renderProjects();if(tab==='rewards')renderRewards();if(tab==='smoke')renderSmoke();window.scrollTo(0,0);}
