@@ -3,7 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Ran's Hub</title>
+<title>Ran Hub</title>
+<meta name="description" content="Ran Hub — a personal mission-control and daily quest system for tasks, music, habits, and progress.">
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0c0a1e">
+<meta name="color-scheme" content="dark light">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- iOS standalone -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ran Hub">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<!-- Icons -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Pixelify+Sans:wght@400;500;600;700&family=Silkscreen:wght@400;700&family=Permanent+Marker&family=Secular+One&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -524,11 +539,23 @@ nav button span{font-size:8px;white-space:nowrap;letter-spacing:-.3px}
 .projfoot{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
 .projfoot .btn{width:auto;flex:1;padding:9px 10px;font-size:12px}
 
+/* ===== BRANDED LAUNCH SPLASH ===== */
+#splash{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:radial-gradient(circle at 50% 38%,#1a1030 0%,#0c0a1e 70%);transition:opacity .45s ease;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#splash.hide{opacity:0;pointer-events:none}
+#splash img{width:132px;height:132px;border-radius:26px;border:3px solid rgba(255,255,255,.9);box-shadow:0 12px 34px rgba(0,0,0,.55),0 0 0 1px #0c0a1e;animation:splpop .5s cubic-bezier(.2,.8,.2,1)}
+#splash .sname{font-family:'Press Start 2P',monospace;font-size:20px;letter-spacing:2px;color:#ffd166;text-shadow:2px 2px 0 #3a1d07}
+#splash .sbar{width:120px;height:8px;border-radius:5px;background:rgba(255,255,255,.14);overflow:hidden}
+#splash .sbar i{display:block;height:100%;width:38%;border-radius:5px;background:linear-gradient(90deg,#f7a823,#e0307f);animation:sload 1s ease-in-out infinite}
+@keyframes splpop{from{transform:scale(.82);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes sload{0%{transform:translateX(-130%)}100%{transform:translateX(330%)}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div id="bg"></div><div id="grain"></div>
+<div id="splash"><img src="icons/icon-192.png" alt="Ran Hub" width="132" height="132"><div class="sname">RAN HUB</div><div class="sbar"><i></i></div></div>
 
 <div class="app">
   <header>
@@ -545,7 +572,7 @@ nav button span{font-size:8px;white-space:nowrap;letter-spacing:-.3px}
       </div>
       <div class="brand">
         <div class="cbadge" id="logoBadge"></div>
-        <div class="ttxt"><span class="t1">RAN'S</span><span class="t2">HUB</span></div>
+        <div class="ttxt"><span class="t1">RAN</span><span class="t2">HUB</span></div>
       </div>
     </div>
     <div class="expmeter">
@@ -1595,6 +1622,19 @@ renderLogo();
 renderAll();
 setInterval(()=>{if(S.day!==todayStr()){rollover();renderAll();}},30000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.day!==todayStr()){rollover();renderAll();}});
+</script>
+<script>
+/* Launch splash + PWA service worker */
+(function(){
+  function hideSplash(){var s=document.getElementById('splash');if(s){s.classList.add('hide');setTimeout(function(){s&&s.remove();},500);}}
+  window.addEventListener('load',function(){setTimeout(hideSplash,550);});
+  setTimeout(hideSplash,4000); // safety net
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+})();
 </script>
 </body>
 </html>
