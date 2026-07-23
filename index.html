@@ -734,12 +734,19 @@ select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--lin
           </div>
           <label class="switch"><input type="checkbox" id="overwhelmTg"><span class="tr"></span></label>
         </div>
+        <div class="togrow" style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--line-soft)">
+          <div>
+            <div class="ctitle" style="margin:0"><span class="pip" style="background:var(--cyan);box-shadow:2px 2px 0 rgba(10,159,196,.3)"></span>מצב מנוחה</div>
+            <div class="sub" style="margin:6px 0 0">יום עם מעט אנרגיה. רק משימות קלות והצעד המינימלי.</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="restTg"><span class="tr"></span></label>
+        </div>
         <div class="three" id="nextStep"></div>
       </div>
 
       <div class="card">
         <div class="ctitle"><span class="pip" style="background:var(--cyan);box-shadow:2px 2px 0 rgba(10,159,196,.3)"></span>המשימות של היום</div>
-        <div class="sub">סמן מה שהשלמת. מתעדכן יחד עם עמוד המשימות.</div>
+        <div class="sub" id="missionsSub">סמן מה שהשלמת. מתעדכן יחד עם עמוד המשימות.</div>
         <div class="tasklist" id="homeMissions"></div>
         <button class="btn primary addmission" id="homeAddMission"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף משימה</button>
       </div>
@@ -1154,7 +1161,7 @@ function defaultState(){return{
   day:todayStr(),totalExp:0,streak:0,lastDoneDate:null,lastVisit:null,
   tasks:JSON.parse(JSON.stringify(DEFAULT_TASKS)),
   doneToday:[],log:[],expByDate:{},wins:[],
-  musicIdea:'',studio:false,overwhelm:false,
+  musicIdea:'',studio:false,overwhelm:false,rest:false,
   checkin:{mood:null,energy:5,focus:5,note:'',music:'',helped:''},
   cigs:[],weed:{kept:false,streak:0,lastKept:null},genshin:{kept:false,streak:0,lastKept:null},muted:false,
   noteMod:{xp:0,done:{},best:{}},fifthsMod:{xp:0,done:{},best:{}},guitarMod:{xp:0,done:{},best:{}},
@@ -1279,8 +1286,14 @@ function renderHome(){
 
   // daily missions (shared with tasks tab)
   const hm=document.getElementById('homeMissions');
-  const today=sortTasks(S.tasks.filter(t=>t.cat==='today'));
-  hm.innerHTML=today.length?today.map(t=>taskRow(t,false)).join(''):'<div class="empty">אין משימות להיום. הוסף אחת ↓</div>';
+  const subEl=document.getElementById('missionsSub');
+  let today=sortTasks(S.tasks.filter(t=>t.cat==='today'));
+  if(S.rest){
+    const qMin=(S.quest&&S.quest.date===todayStr())?S.quest.minId:null;
+    today=today.filter(t=>t.energy==='low'||t.id===qMin);
+    if(subEl)subEl.innerHTML='🌙 מצב מנוחה — רק הקל שבקל. גם לנוח זה ניצחון.';
+  }else if(subEl){subEl.textContent='סמן מה שהשלמת. מתעדכן יחד עם עמוד המשימות.';}
+  hm.innerHTML=today.length?today.map(t=>taskRow(t,false)).join(''):(S.rest?'<div class="empty">אין משימות קלות מוגדרות. סמן משימה כ״אנרגיה נמוכה״ כדי שתופיע כאן — או פשוט תנוח.</div>':'<div class="empty">אין משימות להיום. הוסף אחת ↓</div>');
   bindTaskRows(hm);
 
   // cigarettes
@@ -1420,7 +1433,7 @@ function addWin(text){if(!text||!text.trim())return;S.wins.unshift({id:'w'+Date.
 
 function renderCheckin(){const m=document.getElementById('moods');m.innerHTML=MOODS.map((mo,i)=>`<button class="mood ${S.checkin.mood===i?'sel':''}" data-m="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="${mo.c}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/>${mo.f}</svg></button>`).join('');m.querySelectorAll('.mood').forEach(b=>b.onclick=()=>{S.checkin.mood=+b.dataset.m;save();renderCheckin();});document.getElementById('energy').value=S.checkin.energy;document.getElementById('energyVal').textContent='⚡'+S.checkin.energy;document.getElementById('focus').value=S.checkin.focus;document.getElementById('focusVal').textContent='🎯'+S.checkin.focus;document.getElementById('ciNote').value=S.checkin.note;document.getElementById('ciMusic').value=S.checkin.music;document.getElementById('ciHelped').value=S.checkin.helped;}
 
-function renderAll(){rollover();renderHeader();renderWelcome();renderQuest();renderHome();renderTasks();renderMusic();renderProgress();renderTrain();renderCalendar();renderNotepad();renderHistory();renderProjects();renderRewards();renderSmoke();document.getElementById('overwhelmTg').checked=S.overwhelm;document.getElementById('studioTg').checked=S.studio;document.getElementById('musicIdea').value=S.musicIdea;document.getElementById('btnMute').classList.toggle('muted',S.muted);}
+function renderAll(){rollover();renderHeader();renderWelcome();renderQuest();renderHome();renderTasks();renderMusic();renderProgress();renderTrain();renderCalendar();renderNotepad();renderHistory();renderProjects();renderRewards();renderSmoke();document.getElementById('overwhelmTg').checked=S.overwhelm;document.getElementById('restTg').checked=S.rest;document.getElementById('studioTg').checked=S.studio;document.getElementById('musicIdea').value=S.musicIdea;document.getElementById('btnMute').classList.toggle('muted',S.muted);}
 
 /* ===== TASK MODAL ===== */
 let modalEditId=null,modalCat='today',modalColor=COLORS[0],modalIcon='star',modalPrio='normal',modalRepeat='daily',modalEnergy='med';
@@ -1461,6 +1474,7 @@ document.getElementById('editToggle').onclick=()=>{editing=!editing;renderTasks(
 document.getElementById('addTaskBtn').onclick=()=>openTaskModal(null,'today');
 document.getElementById('homeAddMission').onclick=()=>openTaskModal(null,'today');
 document.getElementById('overwhelmTg').onchange=e=>{S.overwhelm=e.target.checked;save();renderHome();};
+document.getElementById('restTg').onchange=e=>{S.rest=e.target.checked;save();renderHome();if(e.target.checked)announce('מצב מנוחה הופעל. רק משימות קלות מוצגות.');};
 document.getElementById('studioTg').onchange=e=>{S.studio=e.target.checked;save();};
 document.getElementById('musicIdea').oninput=e=>{S.musicIdea=e.target.value;save();};
 document.getElementById('cigAdd').onclick=()=>{const why=document.getElementById('cigWhy').value.trim();const tm=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});S.cigs.push({id:'cig'+Date.now(),why,t:tm});document.getElementById('cigWhy').value='';save();renderHome();sndNeg();};
