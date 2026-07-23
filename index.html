@@ -539,6 +539,43 @@ nav button span{font-size:8px;white-space:nowrap;letter-spacing:-.3px}
 .projfoot{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
 .projfoot .btn{width:auto;flex:1;padding:9px 10px;font-size:12px}
 
+/* ===== REWARD VAULT ===== */
+.rwd{padding:13px}
+.rwd .rtop{display:flex;align-items:center;gap:12px}
+.rwd .rEmoji{width:46px;height:46px;flex:none;border-radius:13px;display:grid;place-items:center;font-size:24px;background:var(--hud);border:2px solid var(--line);box-shadow:2px 2px 0 rgba(124,58,237,.25)}
+.rwd .rTitle{font-family:'Heebo';font-weight:800;font-size:15px;color:var(--ink);line-height:1.25}
+.rwd .rCond{font-family:'Heebo';font-weight:600;font-size:11.5px;color:var(--ink-dim);margin-top:2px}
+.rwd .rDel{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);background:var(--card-2);color:var(--ink-faint);font-size:15px;line-height:1;cursor:pointer}
+.rwd .rFoot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px}
+.rwd .rPct{font-family:'Silkscreen';font-size:9px;color:var(--ink-dim)}
+.rwd.ready{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange),4px 4px 0 rgba(232,119,26,.28)}
+.rwd.ready .rEmoji{background:linear-gradient(150deg,var(--orange),#c4540f);border-color:#fff;animation:rwdpulse 1.6s ease-in-out infinite}
+.rwd.claimed{opacity:.62}
+@keyframes rwdpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.rClaim{width:auto;flex:1;padding:9px 12px;font-size:12.5px}
+.rformrow{display:flex;gap:8px;margin-bottom:9px}
+.rformrow>*{flex:1}
+select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--line);border-radius:8px;color:var(--ink);font-family:'Heebo';font-weight:600;font-size:13.5px;padding:10px;outline:none}
+.emojipick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.emojipick button{width:38px;height:38px;border-radius:10px;border:2px solid var(--line);background:var(--card-2);font-size:19px;cursor:pointer}
+.emojipick button.sel{border-color:var(--cyan);background:rgba(21,199,232,.18)}
+
+/* ===== SMOKE-FREE SPACE ===== */
+.smkTimer{text-align:center;padding:20px 12px}
+.smkClock{font-family:'Press Start 2P',monospace;font-size:34px;color:var(--cyan-bright);text-shadow:2px 2px 0 var(--hud);letter-spacing:1px;direction:ltr}
+.smkSub{font-family:'Heebo';font-weight:700;font-size:12.5px;color:var(--ink-dim);margin-top:9px}
+.smkState{display:inline-block;font-family:'Heebo';font-weight:800;font-size:11px;padding:4px 12px;border-radius:20px;margin-bottom:12px}
+.smkState.on{background:rgba(58,168,58,.18);color:var(--lime);border:1px solid rgba(58,168,58,.45)}
+.smkState.off{background:rgba(124,58,237,.12);color:var(--purple);border:1px solid var(--line)}
+.smkStats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+.smkChip{background:var(--hud);border:2px solid rgba(124,58,237,.4);border-radius:14px;padding:10px 6px;text-align:center;box-shadow:2px 2px 0 rgba(124,58,237,.3)}
+.smkChip b{display:block;font-family:'Pixelify Sans';font-weight:700;font-size:19px;color:#fff}
+.smkChip span{font-family:'Silkscreen';font-size:8px;color:var(--cyan-bright)}
+.durrow{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 12px}
+.durrow button{flex:1;min-width:60px;padding:9px 6px;border-radius:11px;border:2px solid var(--line);background:var(--card-2);color:var(--ink);font-family:'Heebo';font-weight:700;font-size:12.5px;cursor:pointer}
+.durrow button.sel{border-color:var(--cyan);background:rgba(21,199,232,.18)}
+.cravrow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft);font-family:'Heebo';font-size:12.5px;color:var(--ink-dim)}
+
 /* ===== BRANDED LAUNCH SPLASH ===== */
 #splash{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
   background:radial-gradient(circle at 50% 38%,#1a1030 0%,#0c0a1e 70%);transition:opacity .45s ease;
@@ -777,6 +814,12 @@ nav button span{font-size:8px;white-space:nowrap;letter-spacing:-.3px}
 
     <!-- PROJECTS -->
     <section class="view" id="v-projects"><div id="projBody"></div></section>
+
+    <!-- REWARD VAULT -->
+    <section class="view" id="v-rewards"><div id="rewardsBody"></div></section>
+
+    <!-- SMOKE-FREE SPACE -->
+    <section class="view" id="v-smoke"><div id="smokeBody"></div></section>
   </main>
 
   <nav>
@@ -883,6 +926,8 @@ nav button span{font-size:8px;white-space:nowrap;letter-spacing:-.3px}
       <button class="morebtn" data-view="music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span>מצב סטודיו / מוזיקה</span></button>
       <button class="morebtn" data-view="checkin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><span>צ׳ק-אין יומי</span></button>
       <button class="morebtn" data-view="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>סטטיסטיקה</span></button>
+      <button class="morebtn" data-view="rewards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span>כספת הפרסים</span></button>
+      <button class="morebtn" data-view="smoke"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 12H2v4h16"/><path d="M18 12a2 2 0 0 0 0-4 2 2 0 0 1 0-4"/><path d="M22 12v4"/><path d="M20 16v-4"/></svg><span>מרחב נקי מעישון</span></button>
       <button class="morebtn" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>הגדרות</span></button>
     </div>
     <button class="btn ghost" id="moreClose" style="margin-top:14px">סגור</button>
@@ -990,6 +1035,7 @@ function defaultState(){return{
   cigs:[],weed:{kept:false,streak:0,lastKept:null},genshin:{kept:false,streak:0,lastKept:null},muted:false,
   noteMod:{xp:0,done:{},best:{}},fifthsMod:{xp:0,done:{},best:{}},guitarMod:{xp:0,done:{},best:{}},
   quizHistory:[],notepad:[],events:{},hist:{},aiRequests:[],aiKey:'',
+  rewards:[],smoke:{active:null,sessions:[]},
   projects:[
     {id:'p1',title:'לסיים את FORGOTTEN',done:false,subs:[]},
     {id:'p2',title:'לסיים את TILL FOREVER',done:false,subs:[]},
@@ -1140,7 +1186,7 @@ function addWin(text){if(!text||!text.trim())return;S.wins.unshift({id:'w'+Date.
 
 function renderCheckin(){const m=document.getElementById('moods');m.innerHTML=MOODS.map((mo,i)=>`<button class="mood ${S.checkin.mood===i?'sel':''}" data-m="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="${mo.c}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/>${mo.f}</svg></button>`).join('');m.querySelectorAll('.mood').forEach(b=>b.onclick=()=>{S.checkin.mood=+b.dataset.m;save();renderCheckin();});document.getElementById('energy').value=S.checkin.energy;document.getElementById('energyVal').textContent='⚡'+S.checkin.energy;document.getElementById('focus').value=S.checkin.focus;document.getElementById('focusVal').textContent='🎯'+S.checkin.focus;document.getElementById('ciNote').value=S.checkin.note;document.getElementById('ciMusic').value=S.checkin.music;document.getElementById('ciHelped').value=S.checkin.helped;}
 
-function renderAll(){rollover();renderHeader();renderHome();renderTasks();renderMusic();renderProgress();renderTrain();renderCalendar();renderNotepad();renderHistory();renderProjects();document.getElementById('overwhelmTg').checked=S.overwhelm;document.getElementById('studioTg').checked=S.studio;document.getElementById('musicIdea').value=S.musicIdea;document.getElementById('btnMute').classList.toggle('muted',S.muted);}
+function renderAll(){rollover();renderHeader();renderHome();renderTasks();renderMusic();renderProgress();renderTrain();renderCalendar();renderNotepad();renderHistory();renderProjects();renderRewards();renderSmoke();document.getElementById('overwhelmTg').checked=S.overwhelm;document.getElementById('studioTg').checked=S.studio;document.getElementById('musicIdea').value=S.musicIdea;document.getElementById('btnMute').classList.toggle('muted',S.muted);}
 
 /* ===== TASK MODAL ===== */
 let modalEditId=null,modalCat='today',modalColor=COLORS[0],modalIcon='star';
@@ -1166,7 +1212,7 @@ document.getElementById('tmDelete').onclick=()=>{if(modalEditId&&confirm('למח
 document.getElementById('tmSave').onclick=()=>{const name=document.getElementById('tmName').value.trim();if(!name)return;const data={title:name,cat:modalCat,exp:Math.max(5,+document.getElementById('tmExp').value||25),tag:document.getElementById('tmTag').value.trim()||'משימה',tagColor:modalColor,icon:modalIcon,quick:document.getElementById('tmQuick').checked};if(modalEditId){Object.assign(S.tasks.find(x=>x.id===modalEditId),data);}else{data.id='t'+Date.now();S.tasks.push(data);}save();document.getElementById('taskModal').classList.remove('on');renderAll();};
 
 /* ===== EVENTS ===== */
-function switchView(tab){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));const el=document.getElementById('v-'+tab);if(el)el.classList.add('on');if(tab==='progress')renderProgress();if(tab==='checkin')renderCheckin();if(tab==='train')renderTrain();if(tab==='cal')renderCalendar();if(tab==='pad')renderNotepad();if(tab==='hist')renderHistory();if(tab==='projects')renderProjects();window.scrollTo(0,0);}
+function switchView(tab){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));const el=document.getElementById('v-'+tab);if(el)el.classList.add('on');if(tab==='progress')renderProgress();if(tab==='checkin')renderCheckin();if(tab==='train')renderTrain();if(tab==='cal')renderCalendar();if(tab==='pad')renderNotepad();if(tab==='hist')renderHistory();if(tab==='projects')renderProjects();if(tab==='rewards')renderRewards();if(tab==='smoke')renderSmoke();window.scrollTo(0,0);}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const tab=b.dataset.tab;if(tab==='more'){document.getElementById('moreSheet').classList.add('on');return;}document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));switchView(tab);});
 document.querySelectorAll('.seg [data-seg]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.seg [data-seg]').forEach(x=>x.classList.toggle('on',x===b));document.getElementById('segDaily').style.display=b.dataset.seg==='daily'?'block':'none';document.getElementById('segDone').style.display=b.dataset.seg==='done'?'block':'none';document.getElementById('segRanks').style.display=b.dataset.seg==='ranks'?'block':'none';});
 document.getElementById('editToggle').onclick=()=>{editing=!editing;renderTasks();};
@@ -1246,7 +1292,7 @@ function celebrateLevelUp(level,subtitle,isRank){
   if(navigator.vibrate){try{navigator.vibrate(isRank?[40,40,90]:[30,30,60]);}catch(e){}}
   clearTimeout(luTimer);luTimer=setTimeout(closeLevelUp,isRank?3600:2700);
 }
-function closeLevelUp(){const el=document.getElementById('lvlup');el.classList.remove('on','proj');el.querySelectorAll('.luConf').forEach(c=>c.remove());}
+function closeLevelUp(){const el=document.getElementById('lvlup');el.classList.remove('on','proj','gold','reward');el.querySelectorAll('.luConf').forEach(c=>c.remove());}
 function spawnConfetti(host,n){const cols=['#7c3aed','#15c7e8','#e0307f','#7ce04a','#ffd166','#ffffff'];for(let i=0;i<n;i++){const p=document.createElement('div');p.className='luConf';p.style.left=(Math.random()*100)+'vw';p.style.background=cols[i%cols.length];const sz=6+Math.random()*9;p.style.width=p.style.height=sz+'px';host.appendChild(p);const drift=(Math.random()-.5)*180;const dur=1300+Math.random()*1500;p.animate([{transform:'translate(0,0) rotate(0deg)',opacity:1},{transform:`translate(${drift}px,110vh) rotate(${(Math.random()<.5?-1:1)*(360+Math.random()*540)}deg)`,opacity:.85}],{duration:dur,easing:'cubic-bezier(.25,.6,.4,1)',delay:Math.random()*300}).onfinish=()=>p.remove();}}
 document.getElementById('lvlup').addEventListener('click',closeLevelUp);
 
@@ -1577,6 +1623,154 @@ function toggleSub(pid,sid){const p=S.projects.find(x=>x.id===pid);if(!p)return;
   }else{s.done=false;if(p.done){p.done=false;subRemoveExp(PROJECT_XP);}subRemoveExp(SUB_XP);save();renderAll();}
 }
 function completeProject(p){if(p.done)return;p.done=true;p.subs.forEach(s=>s.done=true);addExpSilent(PROJECT_XP);save();renderAll();celebrateProject(p.title);}
+
+/* ================= REWARD VAULT ================= */
+let rwdFormOpen=false, rwdEmoji='🎁', rwdType='xp';
+const REWARD_EMOJIS=['🎁','🍫','🎧','🎮','🍕','🛍️','🎬','☕','🏆','🌟','🎸','🥁','💿','🧋','🍔','🌮'];
+const RTYPE_LABEL={xp:'צבירת XP',streak:'רצף ימים',smoke:'שעות נקי מעישון',manual:'פרס אישי (ידני)'};
+function smokeBestHours(){let best=0;const ss=(S.smoke&&S.smoke.sessions)||[];ss.forEach(s=>{if((s.hours||0)>best)best=s.hours;});const a=S.smoke&&S.smoke.active;if(a){const h=(Date.now()-a.start)/3600000;if(h>best)best=h;}return best;}
+function smokeFreeTotalHours(){let t=0;((S.smoke&&S.smoke.sessions)||[]).forEach(s=>t+=(s.hours||0));return t;}
+function rewardProgress(r){
+  if(r.type==='manual')return{pct:100,met:true,label:'פרס אישי — פתח מתי שבא לך'};
+  if(r.type==='xp'){const base=r.base||0;const cur=Math.max(0,S.totalExp-base);return{pct:Math.min(100,cur/r.target*100),met:cur>=r.target,label:cur+' / '+r.target+' XP'};}
+  if(r.type==='streak'){const cur=S.streak||0;return{pct:Math.min(100,cur/r.target*100),met:cur>=r.target,label:'רצף '+cur+' / '+r.target+' ימים'};}
+  if(r.type==='smoke'){const cur=smokeBestHours();return{pct:Math.min(100,cur/r.target*100),met:cur>=r.target,label:cur.toFixed(1)+' / '+r.target+' שעות נקי'};}
+  return{pct:0,met:false,label:''};
+}
+function rewardState(r){if(r.status==='claimed')return'claimed';return rewardProgress(r).met?'ready':'active';}
+function rCondText(r){if(r.type==='xp')return'צבור '+r.target+' XP';if(r.type==='streak')return'הגע לרצף של '+r.target+' ימים';if(r.type==='smoke')return'השלם '+r.target+' שעות נקי';return'פרס שבחרת לעצמך';}
+function addReward(data){S.rewards.push(Object.assign({id:'rw'+Date.now(),status:'active',claimCount:0,createdAt:todayStr()},data));save();renderRewards();}
+function claimReward(id){const r=S.rewards.find(x=>x.id===id);if(!r)return;if(rewardState(r)==='active')return;r.claimCount=(r.claimCount||0)+1;r.claimedAt=todayStr();if(r.repeatable){r.status='active';if(r.type==='xp')r.base=S.totalExp;}else{r.status='claimed';}save();renderRewards();celebrateReward(r);}
+function delReward(id){S.rewards=S.rewards.filter(x=>x.id!==id);save();renderRewards();}
+function rewardCard(r){
+  const st=rewardState(r),pr=rewardProgress(r);
+  const foot = st==='claimed' ? `<span class="rPct">נפתח ${r.claimedAt||''}${r.claimCount>1?(' ·×'+r.claimCount):''}</span>` :
+    st==='ready' ? `<button class="btn primary rClaim" data-rclaim="${r.id}">פתח פרס 🎉</button>` :
+    `<span class="rPct">${escapeHtml(pr.label)}</span><span class="rPct">${Math.round(pr.pct)}%</span>`;
+  const bar = r.type==='manual'?'':`<div class="pbar exp" style="margin-top:10px"><i style="width:${pr.pct}%"></i></div>`;
+  return `<div class="card rwd ${st}">
+    <div class="rtop"><div class="rEmoji">${r.emoji||'🎁'}</div>
+      <div style="flex:1;min-width:0"><div class="rTitle">${escapeHtml(r.title)}</div><div class="rCond">${escapeHtml(rCondText(r))}${r.note?(' · '+escapeHtml(r.note)):''}</div></div>
+      <button class="rDel" data-rdel="${r.id}">×</button></div>
+    ${bar}
+    <div class="rFoot">${foot}</div>
+  </div>`;
+}
+function renderRewards(){
+  const c=document.getElementById('rewardsBody');if(!c)return;
+  const rewards=S.rewards||[];
+  const ready=rewards.filter(r=>rewardState(r)==='ready');
+  const active=rewards.filter(r=>rewardState(r)==='active');
+  const claimed=rewards.filter(r=>rewardState(r)==='claimed');
+  let h=`<div class="card"><div class="ctitle"><span class="pip" style="background:var(--orange);box-shadow:2px 2px 0 rgba(232,119,26,.3)"></span>כספת הפרסים</div>
+    <p class="sub">חבר התקדמות אמיתית לפרסים שאתה בוחר לעצמך. סיים משימות, שמור על רצף או צבור זמן נקי — ואז פתח את הפרס.</p>
+    <button class="btn primary" id="rwdAddBtn">${rwdFormOpen?'סגור':'＋ פרס חדש'}</button>`;
+  if(rwdFormOpen){
+    h+=`<div style="margin-top:12px">
+      <div class="emojipick" id="rwdEmoji">${REWARD_EMOJIS.map(e=>`<button data-e="${e}" class="${e===rwdEmoji?'sel':''}">${e}</button>`).join('')}</div>
+      <input type="text" id="rwdTitle" placeholder="שם הפרס (למשל: להזמין סושי)" style="margin-bottom:9px">
+      <div class="rformrow">
+        <select class="rin" id="rwdType">${Object.keys(RTYPE_LABEL).map(k=>`<option value="${k}" ${k===rwdType?'selected':''}>${RTYPE_LABEL[k]}</option>`).join('')}</select>
+        <input type="number" id="rwdTarget" min="1" placeholder="יעד" ${rwdType==='manual'?'style="display:none"':''}>
+      </div>
+      <input type="text" id="rwdNote" placeholder="הערה / תקציב (אופציונלי)" style="margin-bottom:9px">
+      <label style="display:flex;align-items:center;gap:9px;font-family:'Heebo';font-weight:600;font-size:13px;color:var(--ink-dim);margin-bottom:11px"><input type="checkbox" id="rwdRepeat" style="width:auto">ניתן לפתיחה חוזרת</label>
+      <button class="btn primary" id="rwdSave">שמור פרס</button>
+    </div>`;
+  }
+  h+=`</div>`;
+  if(ready.length)h+=`<div class="secLabel">מוכן לפתיחה 🎉</div>`+ready.map(rewardCard).join('');
+  if(active.length)h+=`<div class="secLabel">בתהליך</div>`+active.map(rewardCard).join('');
+  if(claimed.length)h+=`<div class="secLabel">נפתחו</div>`+claimed.map(rewardCard).join('');
+  if(!rewards.length)h+=`<div class="empty">עוד אין פרסים. הוסף פרס ראשון ותן לעצמך סיבה לסיים.</div>`;
+  c.innerHTML=h;
+  const addBtn=document.getElementById('rwdAddBtn');if(addBtn)addBtn.onclick=()=>{rwdFormOpen=!rwdFormOpen;renderRewards();};
+  const typeSel=document.getElementById('rwdType');if(typeSel)typeSel.onchange=e=>{rwdType=e.target.value;renderRewards();};
+  const ep=document.getElementById('rwdEmoji');if(ep)ep.querySelectorAll('button').forEach(b=>b.onclick=()=>{rwdEmoji=b.dataset.e;ep.querySelectorAll('button').forEach(x=>x.classList.toggle('sel',x===b));});
+  const saveBtn=document.getElementById('rwdSave');if(saveBtn)saveBtn.onclick=()=>{
+    const title=(document.getElementById('rwdTitle').value||'').trim();if(!title){toast('צריך שם לפרס');return;}
+    const type=document.getElementById('rwdType').value;
+    const target=Math.max(1,parseInt(document.getElementById('rwdTarget').value||'0',10)||0);
+    if(type!=='manual'&&!document.getElementById('rwdTarget').value){toast('צריך יעד');return;}
+    const note=(document.getElementById('rwdNote').value||'').trim();
+    const repeatable=document.getElementById('rwdRepeat').checked;
+    const data={title,type,target,note,repeatable,emoji:rwdEmoji};
+    if(type==='xp')data.base=S.totalExp;
+    addReward(data);rwdFormOpen=false;rwdEmoji='🎁';rwdType='xp';toast('פרס נוסף ✓');renderRewards();
+  };
+  c.querySelectorAll('[data-rclaim]').forEach(b=>b.onclick=()=>claimReward(b.dataset.rclaim));
+  c.querySelectorAll('[data-rdel]').forEach(b=>b.onclick=()=>{if(confirm('למחוק את הפרס?'))delReward(b.dataset.rdel);});
+}
+function celebrateReward(r){
+  const el=document.getElementById('lvlup');
+  el.classList.add('gold','proj','reward');
+  el.querySelector('.luKick').textContent='★ REWARD UNLOCKED ★';
+  el.querySelector('.luWord').textContent='פרס נפתח!';
+  el.querySelector('.luSprite').innerHTML=pixelArt(ARROW_SPR,10,{'#':'#ffd166'});
+  el.querySelector('.luBadge').innerHTML='<div style="font-size:58px;line-height:1">'+(r.emoji||'🎁')+'</div>';
+  el.querySelector('.luRank').innerHTML=escapeHtml(r.title)+'<small>'+(r.note?escapeHtml(r.note):'תיהנה מזה. הרווחת את זה.')+'</small>';
+  el.classList.add('on');spawnConfetti(el,90);
+  if(!S.muted){try{sndRankUp();}catch(e){}}
+  if(navigator.vibrate){try{navigator.vibrate([50,40,100,40,130]);}catch(e){}}
+  clearTimeout(luTimer);luTimer=setTimeout(closeLevelUp,4200);
+}
+
+/* ================= SMOKE-FREE SPACE ================= */
+let smkDur=3, smkTick=null;
+function fmtDur(ms){const s=Math.max(0,Math.floor(ms/1000));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');}
+function startSmoke(){S.smoke.active={start:Date.now(),target:smkDur,cravings:[]};save();renderSmoke();toast('מרחב נקי התחיל 🌱');}
+function endSmoke(){const a=S.smoke.active;if(!a)return;const end=Date.now();const hours=Math.round((end-a.start)/3600000*100)/100;S.smoke.sessions.unshift({start:a.start,end,hours,target:a.target,cravings:(a.cravings||[]).length});const reached=hours>=a.target;S.smoke.active=null;save();renderSmoke();renderRewards();if(reached)celebrateSmoke(hours);else toast('המרחב הסתיים — הזמן נספר בכל מקרה 💙');}
+function craving(){const a=S.smoke.active;if(!a)return;a.cravings=a.cravings||[];a.cravings.push({t:Date.now()});save();renderSmoke();toast('רצון עבר — יפה 🙌');}
+function celebrateSmoke(hours){
+  const el=document.getElementById('lvlup');
+  el.classList.add('gold','proj','reward');
+  el.querySelector('.luKick').textContent='★ CLEAN SPACE ★';
+  el.querySelector('.luWord').textContent='מרחב נקי הושלם!';
+  el.querySelector('.luSprite').innerHTML=pixelArt(ARROW_SPR,10,{'#':'#7ce04a'});
+  el.querySelector('.luBadge').innerHTML='<div style="font-size:58px;line-height:1">🌱</div>';
+  el.querySelector('.luRank').innerHTML=`${hours} שעות נקי<small>הזמן הזה שלך. כל הכבוד.</small>`;
+  el.classList.add('on');spawnConfetti(el,80);
+  if(!S.muted){try{sndRankUp();}catch(e){}}
+  if(navigator.vibrate){try{navigator.vibrate([40,40,90]);}catch(e){}}
+  clearTimeout(luTimer);luTimer=setTimeout(closeLevelUp,3600);
+}
+function renderSmoke(){
+  const c=document.getElementById('smokeBody');if(!c)return;
+  const sm=S.smoke||{active:null,sessions:[]};
+  const total=smokeFreeTotalHours();const best=Math.max(0,...(sm.sessions||[]).map(s=>s.hours||0));const done=(sm.sessions||[]).length;
+  let h='';
+  if(sm.active){
+    const a=sm.active;
+    h+=`<div class="card smkTimer"><div class="smkState on">מרחב פעיל</div>
+      <div class="smkClock" id="smkClock">00:00:00</div>
+      <div class="smkSub">יעד: ${a.target} שעות · ${(a.cravings||[]).length} רצונות שעברו</div>
+      <div style="display:flex;gap:9px;margin-top:16px">
+        <button class="btn" id="smkCrav" style="flex:1">רצון עבר 🙌</button>
+        <button class="btn ghost" id="smkEnd" style="flex:1">סיום</button>
+      </div></div>`;
+  }else{
+    h+=`<div class="card smkTimer"><div class="smkState off">אין מרחב פעיל כרגע</div>
+      <p class="sub" style="text-align:center">בחר משך זמן והתחל מרחב נקי מעישון. בלי שיפוט — כל דקה נספרת.</p>
+      <div class="durrow" id="smkDur">${[1,2,3,6,12,24].map(d=>`<button data-d="${d}" class="${d===smkDur?'sel':''}">${d}ש׳</button>`).join('')}</div>
+      <button class="btn primary" id="smkStart">התחל מרחב נקי 🌱</button></div>`;
+  }
+  h+=`<div class="smkStats">
+    <div class="smkChip"><b>${total.toFixed(1)}</b><span>HOURS CLEAN</span></div>
+    <div class="smkChip"><b>${done}</b><span>SESSIONS</span></div>
+    <div class="smkChip"><b>${best.toFixed(1)}</b><span>BEST H</span></div></div>`;
+  if((sm.sessions||[]).length){
+    h+=`<div class="card" style="margin-top:14px"><div class="ctitle"><span class="pip" style="background:var(--lime);box-shadow:2px 2px 0 rgba(58,168,58,.3)"></span>מרחבים אחרונים</div>`;
+    h+=sm.sessions.slice(0,12).map(s=>{const dt=new Date(s.start);const lab=dt.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});return `<div class="cravrow"><span>${lab} · ${(s.hours||0).toFixed(1)} שעות${s.hours>=s.target?' ✓':''}</span><span>${s.cravings||0} רצונות</span></div>`;}).join('');
+    h+=`</div>`;
+  }
+  c.innerHTML=h;
+  const dr=document.getElementById('smkDur');if(dr)dr.querySelectorAll('button').forEach(b=>b.onclick=()=>{smkDur=+b.dataset.d;renderSmoke();});
+  const st=document.getElementById('smkStart');if(st)st.onclick=startSmoke;
+  const cv=document.getElementById('smkCrav');if(cv)cv.onclick=craving;
+  const en=document.getElementById('smkEnd');if(en)en.onclick=()=>{if(confirm('לסיים את המרחב עכשיו?'))endSmoke();};
+  if(smkTick){clearInterval(smkTick);smkTick=null;}
+  if(sm.active){const upd=()=>{const el=document.getElementById('smkClock');if(!el){clearInterval(smkTick);smkTick=null;return;}el.textContent=fmtDur(Date.now()-sm.active.start);};upd();smkTick=setInterval(upd,1000);}
+}
 function renderProjects(){
   const ps=S.projects,doneCount=ps.filter(p=>p.done).length;
   let h=`<div class="card"><div class="ctitle"><span class="pip" style="background:var(--orange);box-shadow:2px 2px 0 rgba(232,119,26,.3)"></span>פרוייקטים גדולים</div><div class="sub">היעדים הגדולים. כל תת-משימה נותנת +${SUB_XP} EXP, וסיום פרוייקט שלם נותן +${PROJECT_XP} EXP בום. הושלמו: ${doneCount}/${ps.length}.</div><button class="btn primary addmission" id="projAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>פרוייקט חדש</button></div>`;
