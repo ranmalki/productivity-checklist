@@ -48,8 +48,8 @@ enhance in tested increments, never ship a broken tree.
 
 ## Planned next increments (proposed order)
 
-1. **Reward Vault** — new `S.rewards[]` (title, condition, XP/streak/smoke-free target, locked/ready/claimed, timestamps); vault UI grouped In-progress / Ready / Claimed; stronger celebration on unlock.
-2. **Timed smoke-free sessions** — extend smoking module with start/duration/elapsed/remaining, craving log + reason, money-saved, neutral language; keep existing daily `cigs[]`.
+1. ~~**Reward Vault**~~ ✅ shipped — `S.rewards[]` (title, emoji, condition type xp/streak/smoke/manual, target, base, repeatable, status). Vault view under More, grouped Ready / In-progress / Claimed, progress bars, add-form, stronger unlock celebration. Additive state (merges over old saves).
+2. ~~**Timed smoke-free sessions**~~ ✅ shipped — `S.smoke{active,sessions[]}`. Live HH:MM:SS timer, duration picker, craving log, stats (total clean hours / sessions / best), neutral language, completion celebration. Feeds the `smoke` reward condition. Existing daily `cigs[]` untouched.
 3. **Daily Quest alignment flow** — quick guided picker: review unfinished → pick main quest / side quests / minimum action / reward → confirm. Framed on Home.
 4. **Task attribute expansion** — priority, effort, energy, due/time, repeat, reward link; clearer visual hierarchy (main / side / bonus / minimum / deferred).
 5. **Centralized XP config + duplicate-award guard** — single `XP` table; completion transaction IDs so toggling can't farm XP.
