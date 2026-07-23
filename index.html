@@ -597,6 +597,19 @@ select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--lin
 #splash .sbar i{display:block;height:100%;width:38%;border-radius:5px;background:linear-gradient(90deg,#f7a823,#e0307f);animation:sload 1s ease-in-out infinite}
 @keyframes splpop{from{transform:scale(.82);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes sload{0%{transform:translateX(-130%)}100%{transform:translateX(330%)}}
+/* ===== WELCOME BACK ===== */
+.wbcard{position:relative;background:linear-gradient(150deg,rgba(21,199,232,.16),rgba(124,58,237,.10)),var(--card);
+  border:2px solid var(--cyan);border-radius:var(--r);box-shadow:var(--pxsh);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);
+  padding:15px 15px 14px;margin-bottom:14px;animation:wbin .4s cubic-bezier(.2,.8,.2,1)}
+.wbcard.big{border-color:var(--lime)}
+@keyframes wbin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.wbtitle{font-family:'Heebo';font-weight:900;font-size:17px;color:var(--ink);margin-bottom:5px}
+.wbsub{font-family:'Heebo';font-size:12.5px;color:var(--ink-dim);line-height:1.55;margin-bottom:11px}
+.wbrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:11px}
+.wbrow span{font-family:'Heebo';font-weight:700;font-size:11.5px;color:var(--purple);background:var(--card-2);border:1px solid var(--line-soft);border-radius:9px;padding:4px 9px}
+.wbx{position:absolute;inset-inline-end:10px;top:10px;width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line-soft);background:var(--card-2);color:var(--ink-dim);font-size:13px;cursor:pointer;line-height:1;display:grid;place-items:center}
+.wbx:active{transform:translate(1px,1px)}
+
 /* ===== DAILY QUEST ===== */
 .questcard{background:linear-gradient(150deg,rgba(124,58,237,.16),rgba(21,199,232,.10)),var(--card);
   border:2px solid var(--purple);border-radius:var(--r);box-shadow:var(--pxsh);
@@ -685,6 +698,7 @@ select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--lin
   <main>
     <!-- HOME -->
     <section class="view on" id="v-home">
+      <div id="welcomeBack"></div>
       <div class="questcard" id="questCard"></div>
       <div class="card hero">
         <div class="rankrow">
@@ -1130,7 +1144,7 @@ function fmtToday(){return new Date().toLocaleDateString('he-IL',{weekday:'long'
 
 /* ===== STATE ===== */
 function defaultState(){return{
-  day:todayStr(),totalExp:0,streak:0,lastDoneDate:null,
+  day:todayStr(),totalExp:0,streak:0,lastDoneDate:null,lastVisit:null,
   tasks:JSON.parse(JSON.stringify(DEFAULT_TASKS)),
   doneToday:[],log:[],expByDate:{},wins:[],
   musicIdea:'',studio:false,overwhelm:false,
@@ -1337,6 +1351,33 @@ function renderQuestBuilder(){
   });
 }
 
+/* ===== RETURN / WELCOME-BACK EXPERIENCE ===== */
+let visitGap=0,welcomeDismissed=false;
+function computeVisitGap(){const lv=S.lastVisit,t=todayStr();let d=0;if(lv&&lv<t){let cur=lv;while(cur<t&&d<120){cur=shift(cur,1);d++;}}visitGap=d;S.lastVisit=t;save();}
+function greeting(){const h=new Date().getHours();if(h<12)return 'בוקר טוב';if(h<17)return 'צהריים טובים';if(h<21)return 'ערב טוב';return 'לילה טוב';}
+function weeklyRecap(){const t=todayStr();let xp=0,active=0;for(let i=0;i<7;i++){const e=S.expByDate[shift(t,-i)]||0;xp+=e;if(e>0)active++;}const cutoff=shift(t,-6);const done=S.log.filter(l=>l.date>=cutoff).length;return {xp,active,done};}
+function renderWelcome(){
+  const host=document.getElementById('welcomeBack');if(!host)return;
+  if(welcomeDismissed||visitGap<1){host.innerHTML='';return;}
+  const expToday=S.expByDate[todayStr()]||0,qActive=questActive(),lvl=levelOf(S.totalExp);
+  if(visitGap>=2){
+    const rc=weeklyRecap();
+    host.innerHTML=`<div class="wbcard big"><button class="wbx" id="wbClose" aria-label="סגור">✕</button>
+      <div class="wbtitle">טוב לראות אותך שוב 🌿</div>
+      <div class="wbsub">עברו ${visitGap} ימים — והכול נשמר. המשימות, ההתקדמות והרעיונות מחכים לך בדיוק איפה שהשארת. בלי לחץ ובלי בושה. בוא נתחיל יום נקי.</div>
+      <div class="wbrow"><span>🔥 רצף ${S.streak}</span><span>⭐ רמה ${lvl}</span><span>📅 7 ימים · ${rc.done} משימות · ${rc.xp} EXP</span></div>
+      <button class="btn primary" id="wbFresh" style="width:100%">בנה משימה יומית חדשה</button></div>`;
+  }else{
+    host.innerHTML=`<div class="wbcard"><button class="wbx" id="wbClose" aria-label="סגור">✕</button>
+      <div class="wbtitle">${greeting()} 👋</div>
+      <div class="wbsub">${qActive?'המשך מאיפה שהפסקת — המשימה היומית שלך מוכנה למטה.':'יום חדש. בוא נבחר מוקד אחד להיום.'}</div>
+      <div class="wbrow"><span>🔥 רצף ${S.streak}</span><span>EXP היום ${expToday}</span></div>
+      ${qActive?'':'<button class="btn primary" id="wbFresh" style="width:100%">בנה משימה יומית</button>'}</div>`;
+  }
+  const cx=host.querySelector('#wbClose');if(cx)cx.onclick=()=>{welcomeDismissed=true;renderWelcome();};
+  const fr=host.querySelector('#wbFresh');if(fr)fr.onclick=()=>{welcomeDismissed=true;renderWelcome();openQuestBuilder();};
+}
+
 let editing=false;
 function renderTasks(){
   const cont=document.getElementById('taskSections');
@@ -1370,7 +1411,7 @@ function addWin(text){if(!text||!text.trim())return;S.wins.unshift({id:'w'+Date.
 
 function renderCheckin(){const m=document.getElementById('moods');m.innerHTML=MOODS.map((mo,i)=>`<button class="mood ${S.checkin.mood===i?'sel':''}" data-m="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="${mo.c}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/>${mo.f}</svg></button>`).join('');m.querySelectorAll('.mood').forEach(b=>b.onclick=()=>{S.checkin.mood=+b.dataset.m;save();renderCheckin();});document.getElementById('energy').value=S.checkin.energy;document.getElementById('energyVal').textContent='⚡'+S.checkin.energy;document.getElementById('focus').value=S.checkin.focus;document.getElementById('focusVal').textContent='🎯'+S.checkin.focus;document.getElementById('ciNote').value=S.checkin.note;document.getElementById('ciMusic').value=S.checkin.music;document.getElementById('ciHelped').value=S.checkin.helped;}
 
-function renderAll(){rollover();renderHeader();renderQuest();renderHome();renderTasks();renderMusic();renderProgress();renderTrain();renderCalendar();renderNotepad();renderHistory();renderProjects();renderRewards();renderSmoke();document.getElementById('overwhelmTg').checked=S.overwhelm;document.getElementById('studioTg').checked=S.studio;document.getElementById('musicIdea').value=S.musicIdea;document.getElementById('btnMute').classList.toggle('muted',S.muted);}
+function renderAll(){rollover();renderHeader();renderWelcome();renderQuest();renderHome();renderTasks();renderMusic();renderProgress();renderTrain();renderCalendar();renderNotepad();renderHistory();renderProjects();renderRewards();renderSmoke();document.getElementById('overwhelmTg').checked=S.overwhelm;document.getElementById('studioTg').checked=S.studio;document.getElementById('musicIdea').value=S.musicIdea;document.getElementById('btnMute').classList.toggle('muted',S.muted);}
 
 /* ===== TASK MODAL ===== */
 let modalEditId=null,modalCat='today',modalColor=COLORS[0],modalIcon='star',modalPrio='normal',modalRepeat='daily',modalEnergy='med';
@@ -2046,6 +2087,7 @@ if(isIOS()&&!isStandalone()){const b=document.getElementById('btnInstall');if(b)
 
 renderWinChips();
 renderLogo();
+computeVisitGap();
 renderAll();
 setInterval(()=>{if(S.day!==todayStr()){rollover();renderAll();}},30000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.day!==todayStr()){rollover();renderAll();}});

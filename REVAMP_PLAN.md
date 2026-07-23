@@ -55,6 +55,10 @@ enhance in tested increments, never ship a broken tree.
 5. ~~**Centralized XP config + duplicate-award guard**~~ ✅ shipped — single `XP` table (`quickAction`/`sub`/`project`) now feeds music quick-actions and the project constants (`SUB_XP`/`PROJECT_XP`). Duplicate-award guard verified (re-toggle 0→30→0, no double-award; `doneToday` gate). Also added the **floating "+N XP"** completion primitive (rises from the tapped element, 1000ms, reduced-motion aware, self-cleaning) — the plan's outstanding "floating +XP near item" feedback item.
 6. **Design-token pass** — consolidate spacing/radius/elevation/z-index tokens for the "order, not chaos" grid.
 
+## Return experience (§17) — shipped
+
+- [x] **Welcome-back states** — `S.lastVisit` tracks the last open; `computeVisitGap()` derives days away at load. Same-day → nothing. 1-day gap → compact time-of-day greeting + "continue where you left off" (or a "build daily quest" CTA). 2+ day gap → a gentle, shame-free welcome card ("everything's saved") with a 7-day recap (tasks + XP) and a fresh-Daily-Quest CTA. Dismissible; shows once per load. Verified for 0/1/3-day gaps.
+
 ## Also shipped this pass
 
 - [x] **Data safety (§21)** — Export backup (`ran-hub-backup-YYYY-MM-DD.json`) and Import/restore in Settings. Import validates JSON shape (`tasks` array), confirms before replacing, merges over `defaultState()` (non-destructive), local-only (no upload).
