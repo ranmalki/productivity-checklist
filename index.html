@@ -587,6 +587,49 @@ select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--lin
 #splash .sbar i{display:block;height:100%;width:38%;border-radius:5px;background:linear-gradient(90deg,#f7a823,#e0307f);animation:sload 1s ease-in-out infinite}
 @keyframes splpop{from{transform:scale(.82);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes sload{0%{transform:translateX(-130%)}100%{transform:translateX(330%)}}
+/* ===== DAILY QUEST ===== */
+.questcard{background:linear-gradient(150deg,rgba(124,58,237,.16),rgba(21,199,232,.10)),var(--card);
+  border:2px solid var(--purple);border-radius:var(--r);box-shadow:var(--pxsh);
+  backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);padding:15px;margin-bottom:14px;position:relative;overflow:hidden}
+.questcard .qhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.questcard .qhtitle{display:flex;align-items:center;gap:8px;font-family:'Pixelify Sans',sans-serif;font-weight:700;font-size:16px;color:var(--purple);letter-spacing:.5px}
+.questcard .qhtitle svg{width:18px;height:18px}
+.questcard .qedit{font-family:'Heebo';font-weight:700;font-size:11px;color:var(--purple);background:var(--card-2);border:1.5px solid var(--line);border-radius:10px;padding:5px 10px;cursor:pointer}
+.questcard .qedit:active{transform:translate(1px,1px)}
+.qempty{text-align:center;padding:6px 4px 2px}
+.qempty p{font-family:'Heebo';font-size:13px;color:var(--ink-dim);margin:8px 0 12px;line-height:1.5}
+.qprog{display:flex;align-items:center;gap:10px;margin:10px 0 12px}
+.qprog .pbar{flex:1;height:12px}
+.qprog .pbar i{background:linear-gradient(90deg,var(--purple),var(--cyan-bright));display:block;height:100%;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.qprog .qpct{font-family:'Silkscreen';font-size:11px;color:var(--purple);flex:none}
+.qslot{display:flex;align-items:center;gap:11px;padding:10px;border-radius:14px;border:1.5px solid var(--line-soft);background:var(--card-2);margin-bottom:8px;cursor:pointer;transition:transform .1s,background .2s}
+.qslot:active{transform:translate(1px,1px)}
+.qslot.done{background:rgba(58,168,58,.12);border-color:rgba(58,168,58,.4)}
+.qslot .qcb{flex:none;width:26px;height:26px;border-radius:9px;border:2px solid var(--purple);display:grid;place-items:center;color:transparent;transition:.15s}
+.qslot.done .qcb{background:var(--lime);border-color:var(--lime);color:#fff}
+.qslot .qcb svg{width:15px;height:15px}
+.qslot .qbody{flex:1;min-width:0}
+.qslot .qkind{font-family:'Silkscreen';font-size:8px;letter-spacing:.5px;color:var(--purple);margin-bottom:2px}
+.qslot.side .qkind{color:var(--cyan)}
+.qslot.min .qkind{color:var(--orange)}
+.qslot .qname{font-family:'Heebo';font-weight:700;font-size:13.5px;color:var(--ink);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qslot.done .qname{text-decoration:line-through;color:var(--ink-dim)}
+.qslot .qxp{flex:none;font-family:'Silkscreen';font-size:9px;color:var(--ink-faint)}
+.qslot .qxp b{color:var(--purple)}
+.qrewardline{display:flex;align-items:center;gap:8px;margin-top:6px;padding:9px 11px;border-radius:12px;background:rgba(224,48,127,.10);border:1.5px solid rgba(224,48,127,.3);font-family:'Heebo';font-size:12px;font-weight:700;color:var(--magenta)}
+.qdone{text-align:center;font-family:'Heebo';font-weight:800;font-size:14px;color:var(--lime);padding:8px 0 2px}
+/* quest builder picker rows */
+.qpick{max-height:44vh;overflow-y:auto;margin:2px 0 6px;-webkit-overflow-scrolling:touch}
+.qpickrow{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;border:1.5px solid var(--line-soft);background:var(--card-2);margin-bottom:7px;cursor:pointer;transition:.12s}
+.qpickrow.sel{border-color:var(--purple);background:rgba(124,58,237,.12);box-shadow:2px 2px 0 rgba(124,58,237,.16)}
+.qpickrow .mk{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;color:transparent}
+.qpickrow.sel .mk{background:var(--purple);border-color:var(--purple);color:#fff}
+.qpickrow.radio .mk{border-radius:50%}
+.qpickrow .mk svg{width:13px;height:13px}
+.qpickrow .pn{flex:1;min-width:0;font-family:'Heebo';font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qpickrow .pt{flex:none;font-family:'Silkscreen';font-size:8px;color:var(--ink-faint)}
+.qstep{font-family:'Heebo';font-weight:800;font-size:13px;color:var(--purple);margin:14px 0 7px;display:flex;align-items:center;gap:7px}
+.qstep small{font-family:'Heebo';font-weight:600;font-size:11px;color:var(--ink-dim)}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -605,6 +648,9 @@ select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--lin
         <button class="iconbtn" id="btnMute" aria-label="צליל">
           <svg class="ic-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
           <svg class="ic-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>
+        </button>
+        <button class="iconbtn" id="btnInstall" aria-label="התקנת האפליקציה" style="display:none;border-color:var(--cyan);color:var(--cyan)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
       </div>
       <div class="brand">
@@ -629,6 +675,7 @@ select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--lin
   <main>
     <!-- HOME -->
     <section class="view on" id="v-home">
+      <div class="questcard" id="questCard"></div>
       <div class="card hero">
         <div class="rankrow">
           <div class="rankname" id="homeRank">מתחיל<small id="homeRankNext"></small></div>
@@ -902,6 +949,21 @@ select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--lin
   </div>
 </div>
 
+<!-- DAILY QUEST BUILDER MODAL -->
+<div class="modal" id="questModal">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3>המשימה היומית</h3>
+    <div class="sub" style="text-align:center">בחר מוקד אחד לעצמך היום. סדר, לא כאוס.</div>
+    <div id="qbBody"></div>
+    <div class="btnbar" style="margin-top:14px">
+      <button class="btn ghost" id="qbCancel">ביטול</button>
+      <button class="btn" id="qbClear" style="display:none;border-color:var(--magenta);color:var(--magenta)">נקה</button>
+      <button class="btn primary" id="qbSave">אשר משימה</button>
+    </div>
+  </div>
+</div>
+
 <!-- SETTINGS MODAL -->
 <div class="modal" id="setModal">
   <div class="sheet">
@@ -909,6 +971,13 @@ select.rin{width:100%;background:rgba(255,255,255,.7);border:2px solid var(--lin
     <h3>הגדרות</h3>
     <div class="setrow"><span>צלילים</span><label class="switch"><input type="checkbox" id="setSound"><span class="tr"></span></label></div>
     <div class="setrow"><span>רק הצעד הבא (ברירת מחדל)</span><label class="switch"><input type="checkbox" id="setOverwhelm"><span class="tr"></span></label></div>
+    <label class="fld" style="margin-top:14px">גיבוי ושחזור נתונים</label>
+    <div class="btnbar">
+      <button class="btn primary" id="dataExport">ייצוא גיבוי</button>
+      <button class="btn" id="dataImport">שחזור מקובץ</button>
+    </div>
+    <input type="file" id="dataImportFile" accept="application/json,.json" style="display:none">
+    <div class="hint">הגיבוי הוא קובץ JSON שנשמר במכשיר שלך. שחזור מחליף את הנתונים הנוכחיים — כדאי לייצא גיבוי קודם.</div>
     <div class="btnbar" style="margin-top:16px">
       <button class="btn ghost" id="setClose">סגור</button>
       <button class="btn" id="setReset" style="border-color:var(--magenta);color:var(--magenta)">איפוס מלא</button>
@@ -1036,6 +1105,7 @@ function defaultState(){return{
   noteMod:{xp:0,done:{},best:{}},fifthsMod:{xp:0,done:{},best:{}},guitarMod:{xp:0,done:{},best:{}},
   quizHistory:[],notepad:[],events:{},hist:{},aiRequests:[],aiKey:'',
   rewards:[],smoke:{active:null,sessions:[]},
+  quest:{date:null,mainId:null,sideIds:[],minId:null,rewardId:null,setAt:null,note:''},
   projects:[
     {id:'p1',title:'לסיים את FORGOTTEN',done:false,subs:[]},
     {id:'p2',title:'לסיים את TILL FOREVER',done:false,subs:[]},
@@ -1153,6 +1223,67 @@ function renderHome(){
 function paintAvoid(key,elId,strkId){const el=document.getElementById(elId),st=S[key];el.classList.toggle('kept',st.kept);el.querySelector('.xbox').textContent=st.kept?'✓':'✕';document.getElementById(strkId).textContent='רצף: '+st.streak+' ימים';}
 function toggleAvoid(key){const st=S[key],t=todayStr();if(st.kept){st.kept=false;st.streak=Math.max(0,st.streak-1);st.lastKept=null;}else{st.kept=true;st.streak=(st.lastKept===shift(t,-1))?st.streak+1:1;st.lastKept=t;sndStreak();}save();renderHome();}
 
+/* ===== DAILY QUEST ===== */
+const questIcon=()=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>';
+const questTask=id=>id?S.tasks.find(t=>t.id===id):null;
+function questActive(){const q=S.quest;return q&&q.date===todayStr()&&(q.mainId||q.minId||(q.sideIds&&q.sideIds.length));}
+function renderQuest(){
+  const card=document.getElementById('questCard');if(!card)return;
+  const q=S.quest||{};
+  if(!questActive()){
+    card.innerHTML=`<div class="qhead"><div class="qhtitle">${questIcon()}המשימה היומית</div></div>
+      <div class="qempty"><p>בחר מוקד אחד להיום — משימה ראשית, כמה צדדיות, וצעד מינימלי לימים קשים.</p>
+      <button class="btn primary" id="questStart" style="width:100%">בנה את המשימה של היום</button></div>`;
+    const b=document.getElementById('questStart');if(b)b.onclick=openQuestBuilder;
+    return;
+  }
+  const slots=[];
+  const main=questTask(q.mainId);if(main)slots.push({kind:'main',label:'משימה ראשית',t:main});
+  (q.sideIds||[]).forEach(id=>{const t=questTask(id);if(t&&t.id!==q.mainId)slots.push({kind:'side',label:'צדדית',t});});
+  const min=questTask(q.minId);if(min&&min.id!==q.mainId&&!(q.sideIds||[]).includes(min.id))slots.push({kind:'min',label:'צעד מינימלי',t:min});
+  const total=slots.length,done=slots.filter(s=>S.doneToday.includes(s.t.id)).length,pct=total?Math.round(done/total*100):0;
+  const rows=slots.map(s=>{const d=S.doneToday.includes(s.t.id);return `<div class="qslot ${s.kind} ${d?'done':''}" data-qid="${s.t.id}"><div class="qcb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg></div><div class="qbody"><div class="qkind">${s.label}</div><div class="qname">${escapeHtml(s.t.title)}</div></div><div class="qxp"><b>+${s.t.exp}</b> XP</div></div>`;}).join('');
+  const rew=q.rewardId?(S.rewards||[]).find(r=>r.id===q.rewardId):null;
+  const rewLine=rew?`<div class="qrewardline">🎁 פרס אחרי סיום: ${escapeHtml(rew.title)}</div>`:'';
+  const allDone=total>0&&done===total;
+  card.innerHTML=`<div class="qhead"><div class="qhtitle">${questIcon()}המשימה היומית</div><button class="qedit" id="questEdit">ערוך</button></div>
+    <div class="qprog"><div class="pbar"><i style="width:${pct}%"></i></div><div class="qpct">${done}/${total}</div></div>
+    ${rows}${rewLine}${allDone?'<div class="qdone">✨ סיימת את המשימה היומית! ✨</div>':''}`;
+  document.getElementById('questEdit').onclick=openQuestBuilder;
+  card.querySelectorAll('.qslot[data-qid]').forEach(el=>el.onclick=e=>{const t=S.tasks.find(x=>x.id===el.dataset.qid);if(!t)return;S.doneToday.includes(t.id)?uncompleteTask(t.id):completeTask(t,e);});
+}
+let QB=null;
+function openQuestBuilder(){
+  const q=(S.quest&&S.quest.date===todayStr())?S.quest:{};
+  QB={mainId:q.mainId||null,sideIds:[...(q.sideIds||[])],minId:q.minId||null,rewardId:q.rewardId||null};
+  renderQuestBuilder();
+  document.getElementById('qbClear').style.display=questActive()?'':'none';
+  document.getElementById('questModal').classList.add('on');
+}
+function renderQuestBuilder(){
+  const body=document.getElementById('qbBody');const tasks=S.tasks;const cats={today:'היום',music:'מוזיקה',later:'להמשך'};
+  const cb='<div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg></div>';
+  const row=(t,type,sel)=>`<div class="qpickrow ${type==='side'?'':'radio'} ${sel?'sel':''}" data-pick="${type}" data-id="${t.id}">${cb}<div class="pn">${escapeHtml(t.title)}</div><div class="pt">${cats[t.cat]||''} · +${t.exp}</div></div>`;
+  const mainList=tasks.length?tasks.map(t=>row(t,'main',QB.mainId===t.id)).join(''):'<div class="empty" style="padding:6px 0">אין משימות. הוסף קודם משימה בעמוד המשימות.</div>';
+  const sideSrc=tasks.filter(t=>t.id!==QB.mainId);
+  const sideList=sideSrc.length?sideSrc.map(t=>row(t,'side',QB.sideIds.includes(t.id))).join(''):'<div class="empty" style="padding:6px 0">—</div>';
+  const minList=tasks.length?tasks.map(t=>row(t,'min',QB.minId===t.id)).join(''):'<div class="empty" style="padding:6px 0">—</div>';
+  const rewards=(S.rewards||[]).filter(r=>r.status!=='claimed');
+  const rewList=rewards.length?rewards.map(r=>`<div class="qpickrow radio ${QB.rewardId===r.id?'sel':''}" data-pick="reward" data-id="${r.id}">${cb}<div class="pn">🎁 ${escapeHtml(r.title)}</div></div>`).join(''):'<div class="empty" style="padding:6px 0">אין פרסים זמינים כרגע. אפשר ליצור בכספת הפרסים.</div>';
+  body.innerHTML=`<div class="qstep">1 · משימה ראשית <small>המוקד המרכזי</small></div><div class="qpick">${mainList}</div>
+    <div class="qstep">2 · משימות צדדיות <small>אופציונלי</small></div><div class="qpick">${sideList}</div>
+    <div class="qstep">3 · צעד מינימלי <small>אם כלום לא הולך — רק זה</small></div><div class="qpick">${minList}</div>
+    <div class="qstep">4 · פרס <small>אופציונלי</small></div><div class="qpick">${rewList}</div>`;
+  body.querySelectorAll('[data-pick]').forEach(el=>el.onclick=()=>{
+    const type=el.dataset.pick,id=el.dataset.id;
+    if(type==='main'){QB.mainId=(QB.mainId===id)?null:id;QB.sideIds=QB.sideIds.filter(x=>x!==QB.mainId);}
+    else if(type==='side'){QB.sideIds.includes(id)?(QB.sideIds=QB.sideIds.filter(x=>x!==id)):QB.sideIds.push(id);}
+    else if(type==='min'){QB.minId=(QB.minId===id)?null:id;}
+    else if(type==='reward'){QB.rewardId=(QB.rewardId===id)?null:id;}
+    renderQuestBuilder();
+  });
+}
+
 let editing=false;
 function renderTasks(){
   const cont=document.getElementById('taskSections');
@@ -1186,7 +1317,7 @@ function addWin(text){if(!text||!text.trim())return;S.wins.unshift({id:'w'+Date.
 
 function renderCheckin(){const m=document.getElementById('moods');m.innerHTML=MOODS.map((mo,i)=>`<button class="mood ${S.checkin.mood===i?'sel':''}" data-m="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="${mo.c}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/>${mo.f}</svg></button>`).join('');m.querySelectorAll('.mood').forEach(b=>b.onclick=()=>{S.checkin.mood=+b.dataset.m;save();renderCheckin();});document.getElementById('energy').value=S.checkin.energy;document.getElementById('energyVal').textContent='⚡'+S.checkin.energy;document.getElementById('focus').value=S.checkin.focus;document.getElementById('focusVal').textContent='🎯'+S.checkin.focus;document.getElementById('ciNote').value=S.checkin.note;document.getElementById('ciMusic').value=S.checkin.music;document.getElementById('ciHelped').value=S.checkin.helped;}
 
-function renderAll(){rollover();renderHeader();renderHome();renderTasks();renderMusic();renderProgress();renderTrain();renderCalendar();renderNotepad();renderHistory();renderProjects();renderRewards();renderSmoke();document.getElementById('overwhelmTg').checked=S.overwhelm;document.getElementById('studioTg').checked=S.studio;document.getElementById('musicIdea').value=S.musicIdea;document.getElementById('btnMute').classList.toggle('muted',S.muted);}
+function renderAll(){rollover();renderHeader();renderQuest();renderHome();renderTasks();renderMusic();renderProgress();renderTrain();renderCalendar();renderNotepad();renderHistory();renderProjects();renderRewards();renderSmoke();document.getElementById('overwhelmTg').checked=S.overwhelm;document.getElementById('studioTg').checked=S.studio;document.getElementById('musicIdea').value=S.musicIdea;document.getElementById('btnMute').classList.toggle('muted',S.muted);}
 
 /* ===== TASK MODAL ===== */
 let modalEditId=null,modalCat='today',modalColor=COLORS[0],modalIcon='star';
@@ -1810,6 +1941,47 @@ document.getElementById('aiClose').onclick=()=>document.getElementById('aiModal'
 document.getElementById('aiCopy').onclick=()=>{const t=S.aiRequests.map(r=>'• '+r.text).join('\n');if(navigator.clipboard)navigator.clipboard.writeText(t);toast('הועתק ✓');};
 document.getElementById('aiClear').onclick=()=>{if(confirm('לנקות את כל הבקשות?')){S.aiRequests=[];save();renderAiList();}};
 document.getElementById('aiModal').addEventListener('click',e=>{if(e.target.id==='aiModal')e.currentTarget.classList.remove('on');});
+
+/* ===== DAILY QUEST wiring ===== */
+document.getElementById('qbCancel').onclick=()=>document.getElementById('questModal').classList.remove('on');
+document.getElementById('qbClear').onclick=()=>{S.quest={date:null,mainId:null,sideIds:[],minId:null,rewardId:null,setAt:null,note:''};save();document.getElementById('questModal').classList.remove('on');renderQuest();};
+document.getElementById('qbSave').onclick=()=>{
+  if(!QB||(!QB.mainId&&!QB.minId&&(!QB.sideIds||!QB.sideIds.length))){toast('בחר לפחות משימה אחת');return;}
+  S.quest={date:todayStr(),mainId:QB.mainId,sideIds:QB.sideIds||[],minId:QB.minId,rewardId:QB.rewardId,setAt:Date.now(),note:''};
+  save();document.getElementById('questModal').classList.remove('on');renderQuest();toast('המשימה היומית מוכנה ✓','ok');
+};
+document.getElementById('questModal').addEventListener('click',e=>{if(e.target.id==='questModal')e.currentTarget.classList.remove('on');});
+
+/* ===== DATA EXPORT / IMPORT (privacy: local-only, no upload) ===== */
+function exportData(){try{
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='ran-hub-backup-'+todayStr()+'.json';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);toast('גיבוי יוצא ✓','ok');
+}catch(e){toast('שגיאת ייצוא');}}
+function importData(file){const rd=new FileReader();rd.onload=()=>{try{
+  const data=JSON.parse(rd.result);
+  if(!data||typeof data!=='object'||!Array.isArray(data.tasks))throw new Error('bad');
+  if(!confirm('לשחזר מהגיבוי? הנתונים הנוכחיים במכשיר יוחלפו.'))return;
+  S=Object.assign(defaultState(),data);save();editing=false;
+  document.getElementById('setModal').classList.remove('on');renderAll();toast('שוחזר מהגיבוי ✓','ok');
+}catch(e){toast('קובץ גיבוי לא תקין');}};rd.readAsText(file);}
+document.getElementById('dataExport').onclick=exportData;
+document.getElementById('dataImport').onclick=()=>document.getElementById('dataImportFile').click();
+document.getElementById('dataImportFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)importData(f);e.target.value='';};
+
+/* ===== INSTALL EXPERIENCE (PWA) ===== */
+function isStandalone(){return window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}
+function isIOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;}
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;const b=document.getElementById('btnInstall');if(b&&!isStandalone())b.style.display='';});
+document.getElementById('btnInstall').onclick=async()=>{
+  if(deferredInstall){deferredInstall.prompt();try{await deferredInstall.userChoice;}catch(e){}deferredInstall=null;document.getElementById('btnInstall').style.display='none';return;}
+  if(isIOS()){toast('התקנה ב-iPhone: פתח את תפריט השיתוף בספארי ובחר "הוסף למסך הבית"');}
+  else{toast('פתח את תפריט הדפדפן ובחר "התקן אפליקציה"');}
+};
+window.addEventListener('appinstalled',()=>{deferredInstall=null;const b=document.getElementById('btnInstall');if(b)b.style.display='none';toast('Ran Hub הותקן ✓','ok');});
+if(isIOS()&&!isStandalone()){const b=document.getElementById('btnInstall');if(b)b.style.display='';}
 
 renderWinChips();
 renderLogo();

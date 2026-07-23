@@ -50,10 +50,16 @@ enhance in tested increments, never ship a broken tree.
 
 1. ~~**Reward Vault**~~ ✅ shipped — `S.rewards[]` (title, emoji, condition type xp/streak/smoke/manual, target, base, repeatable, status). Vault view under More, grouped Ready / In-progress / Claimed, progress bars, add-form, stronger unlock celebration. Additive state (merges over old saves).
 2. ~~**Timed smoke-free sessions**~~ ✅ shipped — `S.smoke{active,sessions[]}`. Live HH:MM:SS timer, duration picker, craving log, stats (total clean hours / sessions / best), neutral language, completion celebration. Feeds the `smoke` reward condition. Existing daily `cigs[]` untouched.
-3. **Daily Quest alignment flow** — quick guided picker: review unfinished → pick main quest / side quests / minimum action / reward → confirm. Framed on Home.
+3. ~~**Daily Quest alignment flow**~~ ✅ shipped — `S.quest{date,mainId,sideIds[],minId,rewardId,setAt}`. Home-top quest card (empty → "build" CTA; active → main/side/minimum slots, live progress `done/total`, optional linked reward, done-state celebration). Guided builder modal (radio main + minimum, multi side, optional reward from Vault). Completion routes through existing `completeTask`/`uncompleteTask` so XP/streak stay single-source. Additive state (date-scoped; stale automatically next day).
 4. **Task attribute expansion** — priority, effort, energy, due/time, repeat, reward link; clearer visual hierarchy (main / side / bonus / minimum / deferred).
-5. **Centralized XP config + duplicate-award guard** — single `XP` table; completion transaction IDs so toggling can't farm XP.
+5. **Centralized XP config + duplicate-award guard** — single `XP` table; completion transaction IDs so toggling can't farm XP. (Partly covered: `doneToday` guard verified — re-toggle 0→30→0, no double-award.)
 6. **Design-token pass** — consolidate spacing/radius/elevation/z-index tokens for the "order, not chaos" grid.
+
+## Also shipped this pass
+
+- [x] **Data safety (§21)** — Export backup (`ran-hub-backup-YYYY-MM-DD.json`) and Import/restore in Settings. Import validates JSON shape (`tasks` array), confirms before replacing, merges over `defaultState()` (non-destructive), local-only (no upload).
+- [x] **Install experience (§22)** — captures `beforeinstallprompt`, shows a header install button, triggers the native prompt on intent, hides on `appinstalled`/standalone; iOS Safari falls back to an "Add to Home Screen" hint (no fake Android prompt). `display-mode: standalone` detection.
+- [x] Headless-tested (Chromium): quest build→save→complete→uncomplete flow, EXP 0→30→0, progress `1/2`, export/import present, no app JS errors (only the sandbox cross-origin font fetch, which the SW handles online).
 
 ## Testing checklist
 
