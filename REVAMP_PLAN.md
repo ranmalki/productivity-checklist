@@ -40,7 +40,19 @@ enhance in tested increments, never ship a broken tree.
 - [x] Full-width gold-emblem header title up to the action buttons.
 - [x] Smoke-tested in headless Chromium: title = "Ran Hub", splash hides, nav renders, no app JS errors (only sandbox font fetch fails, which the SW handles gracefully online).
 
-## Visual redesign pass (dark cosmic-jungle theme)
+## Redesign v2 — neutral / sleek / modern (per user direction)
+
+Pivoted away from the cosmic-pixel look toward a **neutral, modern app** aesthetic:
+- [x] **Palette** — charcoal/graphite dark neutral (near-black bg, dark panels, hairline white borders, soft shadows). Pulled the purple accent back to CTAs / active nav / progress / LVL badge only; neutralized card borders, stat cards, quest card (now a subtle accent stripe), and the date.
+- [x] **Font** — dropped all web/pixel fonts; **Arial** system stack across the app (also removes the Google Fonts network dependency).
+- [x] **Header** — removed the "RAN HUB" wordmark; the logo photo is now centered on its own.
+- [x] **Sounds** — replaced the 8-bit square/saw beeps with **smooth Duolingo-style tones**: soft sine+triangle plucks through a low-pass, pleasant major-interval rises for complete / quick / streak / level / rank (rewritten `chime()` engine).
+- [x] **Haptics** — `haptic()` helper + `navigator.vibrate` taps on completion, toggles, and celebration patterns (best-effort; Android Chrome supports it, iOS Safari ignores).
+- [x] **Motion** — staggered card entrances, smoother view fade, press-scale micro-interactions, and a **swipe-down-to-dismiss** gesture on modal sheets.
+- [x] Neutralized the launch splash (logo only, no wordmark).
+- Verified with Pixel-7 screenshots + full QA regression (green). Sound feel is best judged on-device.
+
+## Visual redesign pass (dark cosmic-jungle theme) — superseded by v2 above
 
 - [x] **Theme flip** — from washed-out translucent-light glass over a busy graffiti photo to **solid dark cosmic panels** on a designed CSS gradient (deep indigo → purple with a warm magenta/orange horizon glow, echoing the icon sky) + a subtle CSS starfield. Removed the 314KB `bg.jpg` entirely (SW cache → v3). Result reads as "order, not chaos" with strong contrast.
 - [x] **Logo** — replaced the procedural pixel-sword badge with the actual cosmic-jungle "R" artwork (`icons/icon-192.png`) in a glowing framed badge.
