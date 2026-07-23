@@ -53,7 +53,19 @@ enhance in tested increments, never ship a broken tree.
 3. ~~**Daily Quest alignment flow**~~ ✅ shipped — `S.quest{date,mainId,sideIds[],minId,rewardId,setAt}`. Home-top quest card (empty → "build" CTA; active → main/side/minimum slots, live progress `done/total`, optional linked reward, done-state celebration). Guided builder modal (radio main + minimum, multi side, optional reward from Vault). Completion routes through existing `completeTask`/`uncompleteTask` so XP/streak stay single-source. Additive state (date-scoped; stale automatically next day).
 4. ~~**Task attribute expansion**~~ ✅ shipped — tasks gain optional `priority` (high/normal/low), `due` (date), `energy` (low/med/high), `repeat` (daily/once). Non-destructive: `normalizeTasks()` fills defaults for any legacy task on load. Editor modal gets priority/due/repeat/energy controls. Rows show meta badges (due w/ overdue state, once, high-priority, low-energy) + priority accent, and every list is `sortTasks()`-ordered (undone → priority → due). One-off (`once`) tasks completed on a day are archived (already in the log) and retired at rollover. Weekly repeat deferred (needs per-task rest tracking). Reward-link lives on the Daily Quest for now.
 5. ~~**Centralized XP config + duplicate-award guard**~~ ✅ shipped — single `XP` table (`quickAction`/`sub`/`project`) now feeds music quick-actions and the project constants (`SUB_XP`/`PROJECT_XP`). Duplicate-award guard verified (re-toggle 0→30→0, no double-award; `doneToday` gate). Also added the **floating "+N XP"** completion primitive (rises from the tapped element, 1000ms, reduced-motion aware, self-cleaning) — the plan's outstanding "floating +XP near item" feedback item.
-6. **Design-token pass** — consolidate spacing/radius/elevation/z-index tokens for the "order, not chaos" grid.
+6. ~~**Design-token pass**~~ ✅ shipped (safe scope) — added a documented spacing scale (`--s1..--s6`) and a z-index tier system (`--z-bg…--z-splash`) to `:root`, and adopted the z-index tokens across every global stacking layer (bg, grain, header, nav, fx, toast, modal, quiz, level-up, splash) with **identical numeric values** (verified: zero visual change). A deeper global rewrite of the hundreds of existing rules was intentionally skipped — high regression risk on the working UI for no user-visible gain.
+
+## Performance (§19) — shipped
+
+- [x] **HTML payload trim** — the cosmic-jungle backdrop (~320KB JPEG) was inlined as a base64 data-URI; externalized to `bg.jpg` and referenced via `url('bg.jpg')`. `index.html` 609KB → 180KB (−70%), faster first paint + parse. Added `bg.jpg` to the SW precache (cache `v1`→`v2`) so offline keeps the backdrop.
+
+## Final QA sweep (headless Chromium) — all green
+
+- [x] Legacy `ttg_v2` (pre-revamp shape) migrates: tasks backfill priority/repeat/energy/due; XP/streak/log preserved.
+- [x] All 11 secondary views + Home render with no JS errors.
+- [x] Task create w/ attributes, Daily Quest build→complete, export download (`ran-hub-backup-<date>.json`), reduced-motion completion — all pass.
+- [x] Modal dialog semantics + focus trap/return + Escape.
+- [x] z-index tokens resolve to expected values; `bg.jpg` decodes (941×1672).
 
 ## Return experience (§17) — shipped
 
