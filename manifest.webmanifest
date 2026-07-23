@@ -1,0 +1,21 @@
+{
+  "name": "Ran Hub",
+  "short_name": "Ran Hub",
+  "id": "/",
+  "description": "Ran Hub — a personal mission-control and daily quest system for tasks, music, habits, and progress.",
+  "display": "standalone",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "theme_color": "#0c0a1e",
+  "background_color": "#0c0a1e",
+  "lang": "he",
+  "dir": "rtl",
+  "categories": ["productivity", "lifestyle", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
