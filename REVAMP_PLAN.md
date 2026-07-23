@@ -59,6 +59,13 @@ enhance in tested increments, never ship a broken tree.
 
 - [x] **Welcome-back states** — `S.lastVisit` tracks the last open; `computeVisitGap()` derives days away at load. Same-day → nothing. 1-day gap → compact time-of-day greeting + "continue where you left off" (or a "build daily quest" CTA). 2+ day gap → a gentle, shame-free welcome card ("everything's saved") with a 7-day recap (tasks + XP) and a fresh-Daily-Quest CTA. Dismissible; shows once per load. Verified for 0/1/3-day gaps.
 
+## Accessibility (§20) — first pass
+
+- [x] **Status announcements** — an `aria-live="polite"` visually-hidden region (`#sr`) announces completion ("+N XP, total today …") and level/rank-ups for screen readers, via `announce()` from `awardExp`.
+- [x] **Keyboard operability** — a `kbd()` helper gives the primary interactive surfaces (task checkboxes, Daily-Quest slots, quest-builder picker rows) `role="button"`, `tabindex`, `aria-label`, and Enter/Space activation. Verified: Tab-focus + Enter completes a task and announces it.
+- [x] Reduced-motion already respected globally + in the new floating-XP/welcome animations.
+- Remaining: focus trap/return for modals, full sweep of legacy div-buttons, contrast audit.
+
 ## Also shipped this pass
 
 - [x] **Data safety (§21)** — Export backup (`ran-hub-backup-YYYY-MM-DD.json`) and Import/restore in Settings. Import validates JSON shape (`tasks` array), confirms before replacing, merges over `defaultState()` (non-destructive), local-only (no upload).
