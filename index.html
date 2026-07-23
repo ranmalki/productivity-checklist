@@ -2089,6 +2089,30 @@ document.getElementById('btnInstall').onclick=async()=>{
 window.addEventListener('appinstalled',()=>{deferredInstall=null;const b=document.getElementById('btnInstall');if(b)b.style.display='none';toast('Ran Hub הותקן ✓','ok');});
 if(isIOS()&&!isStandalone()){const b=document.getElementById('btnInstall');if(b)b.style.display='';}
 
+/* ===== MODAL ACCESSIBILITY (dialog semantics + focus trap/return + Esc) ===== */
+(function(){
+  const modals=[...document.querySelectorAll('.modal')];
+  let lastFocus=null;
+  const focusablesIn=m=>[...m.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(el=>el.offsetParent!==null&&!el.disabled);
+  modals.forEach(m=>{
+    const sheet=m.querySelector('.sheet');
+    if(sheet){sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('tabindex','-1');}
+    new MutationObserver(muts=>muts.forEach(mu=>{if(mu.attributeName!=='class')return;
+      if(m.classList.contains('on')){lastFocus=document.activeElement;setTimeout(()=>{(sheet||m).focus&&(sheet||m).focus();},30);}
+      else if(lastFocus&&lastFocus.focus){lastFocus.focus();lastFocus=null;}
+    })).observe(m,{attributes:true});
+  });
+  document.addEventListener('keydown',e=>{
+    const open=[...document.querySelectorAll('.modal.on')].pop();if(!open)return;
+    if(e.key==='Escape'){open.classList.remove('on');e.stopPropagation();return;}
+    if(e.key==='Tab'){const f=focusablesIn(open);if(!f.length){e.preventDefault();return;}
+      const first=f[0],last=f[f.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+    }
+  });
+})();
+
 renderWinChips();
 renderLogo();
 computeVisitGap();
