@@ -40,6 +40,14 @@ enhance in tested increments, never ship a broken tree.
 - [x] Full-width gold-emblem header title up to the action buttons.
 - [x] Smoke-tested in headless Chromium: title = "Ran Hub", splash hides, nav renders, no app JS errors (only sandbox font fetch fails, which the SW handles gracefully online).
 
+## Visual redesign pass (dark cosmic-jungle theme)
+
+- [x] **Theme flip** — from washed-out translucent-light glass over a busy graffiti photo to **solid dark cosmic panels** on a designed CSS gradient (deep indigo → purple with a warm magenta/orange horizon glow, echoing the icon sky) + a subtle CSS starfield. Removed the 314KB `bg.jpg` entirely (SW cache → v3). Result reads as "order, not chaos" with strong contrast.
+- [x] **Logo** — replaced the procedural pixel-sword badge with the actual cosmic-jungle "R" artwork (`icons/icon-192.png`) in a glowing framed badge.
+- [x] **Wordmark** — dropped the gaudy heavy-stroke gold "RAN" + red «HUB» ribbon for a clean modern gold "RAN" / cyan "HUB".
+- [x] **Typography** — swapped the dated pixel fonts (Pixelify Sans, Press Start 2P) for **Rubik** (modern geometric sans, full Hebrew); kept tiny Silkscreen HUD labels as a subtle retro nod. Bumped base size 16 → 17.5px.
+- [x] **Token-driven** — the whole flip runs through `:root` (ink→light, cards→dark, borders/inputs/segments retuned), so every view inherited it. Verified with Pixel-7-sized screenshots across home, active quest, tasks, and the task modal; full QA regression still green.
+
 ## Status: revamp roadmap complete
 
 All planned increments (#1–#6) and the cross-cutting spec areas (§17 return, §18 completion feedback, §19 performance, §20 accessibility, §21 data safety, §22 install, Phase 7 support systems) are implemented, headless-tested, committed, and deployed to the branch preview. Remaining known non-goals: weekly task repeat (deferred), a deep global CSS-token rewrite (intentionally skipped for regression safety), and a formal contrast audit. On-device (Pixel 7 / iOS) verification is the outstanding manual step before merge to production.
