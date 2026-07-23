@@ -287,6 +287,7 @@ nav button.on{color:var(--purple)}
 @keyframes tin{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
 @keyframes tout{to{transform:translateY(-30px);opacity:0}}
 .burst{position:fixed;width:6px;height:6px;pointer-events:none;z-index:80}
+.floatxp{position:fixed;pointer-events:none;z-index:81;font-family:'Silkscreen';font-weight:700;font-size:15px;color:var(--lime-bright);text-shadow:1px 1px 0 rgba(20,12,40,.6),0 0 8px rgba(124,224,74,.5);white-space:nowrap;will-change:transform,opacity}
 
 .modal{position:fixed;inset:0;z-index:100;background:rgba(8,6,18,.55);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
 .modal.on{display:flex}
@@ -1094,6 +1095,8 @@ const COLORS=['#7c3aed','#0a9fc4','#e0307f','#3aa83a','#e8771a','#5a63d8'];
 
 /* ===== CONFIG ===== */
 const EXP_PER_LEVEL=80;
+/* centralized XP values (task exp is per-task; these are the fixed rewards) */
+const XP={quickAction:10,quickWin:0,sub:15,project:200};
 const PRIO={high:{n:'גבוהה',o:0,c:'#e0307f'},normal:{n:'רגילה',o:1,c:'#7c3aed'},low:{n:'נמוכה',o:2,c:'#0a9fc4'}};
 const ENERGY={low:'אנרגיה נמוכה',med:'בינונית',high:'גבוהה'};
 const REPEATS={daily:'כל יום',once:'חד-פעמי'};
@@ -1175,6 +1178,10 @@ const sndNeg=()=>beep([200,150],0.14,'sine',0.04);
 /* ===== TOAST / BURST ===== */
 function toast(txt,cls=''){const el=document.createElement('div');el.className='toast '+cls;el.innerHTML=txt;document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),2700);}
 function burst(x,y){const cols=['#7c3aed','#15c7e8','#e0307f','#7ce04a'];for(let i=0;i<12;i++){const p=document.createElement('div');p.className='burst';p.style.left=x+'px';p.style.top=y+'px';p.style.background=cols[i%4];document.body.appendChild(p);const a=Math.random()*Math.PI*2,d=30+Math.random()*40;p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px) scale(0)`,opacity:0}],{duration:550,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=()=>p.remove();}}
+const reduceMotion=()=>window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function floatXP(amount,x,y){const el=document.createElement('div');el.className='floatxp';el.textContent='+'+amount+' XP';el.style.left=x+'px';el.style.top=y+'px';document.body.appendChild(el);
+  if(reduceMotion()){el.style.transform='translate(-50%,-150%)';setTimeout(()=>el.remove(),700);return;}
+  el.animate([{transform:'translate(-50%,-40%) scale(.8)',opacity:0},{transform:'translate(-50%,-95%) scale(1.1)',opacity:1,offset:.28},{transform:'translate(-50%,-200%) scale(1)',opacity:0}],{duration:1000,easing:'cubic-bezier(.2,.8,.3,1)'}).onfinish=()=>el.remove();}
 
 /* ===== EXP / COMPLETION ===== */
 function awardExp(amount,taskId,ev){
@@ -1182,7 +1189,7 @@ function awardExp(amount,taskId,ev){
   S.totalExp+=amount;const t=todayStr();S.expByDate[t]=(S.expByDate[t]||0)+amount;
   if(S.lastDoneDate!==t){S.streak=(S.lastDoneDate===shift(t,-1))?S.streak+1:1;S.lastDoneDate=t;if(S.streak>1)sndStreak();}
   const after=levelOf(S.totalExp),afterRank=rankFor(after).n;
-  if(ev){const r=(ev.currentTarget&&ev.currentTarget.getBoundingClientRect)?ev.currentTarget.getBoundingClientRect():ev.target.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2);}
+  if(ev){const r=(ev.currentTarget&&ev.currentTarget.getBoundingClientRect)?ev.currentTarget.getBoundingClientRect():ev.target.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;burst(cx,cy);if(amount>0)floatXP(amount,cx,cy);}
   if(after>before){celebrateLevelUp(after,afterRank,afterRank!==beforeRank);}
   else{taskId?sndComplete():sndQuick();}
   save();renderAll();
@@ -1339,7 +1346,7 @@ function renderTasks(){
   document.getElementById('editToggle').innerHTML=editing?`${svg('star')}סיום`:`${svg('edit')}ערוך`;
 }
 function renderMusicTasks(){const c=document.getElementById('musicTasks');const items=sortTasks(S.tasks.filter(t=>t.cat==='music'));c.innerHTML=items.map(t=>taskRow(t,false)).join('')||'<div class="empty">אין משימות מוזיקה</div>';bindTaskRows(c);}
-function renderMusic(){const qa=document.getElementById('musicQA');qa.innerHTML=MUSIC_QA.map((a,i)=>`<div class="qabtn" data-qa="${i}"><div class="ico">${svg(a.i)}</div><span>${a.t}</span></div>`).join('');qa.querySelectorAll('[data-qa]').forEach(b=>b.onclick=e=>{const a=MUSIC_QA[b.dataset.qa];logQuick(a.t,10,e);});renderMusicTasks();}
+function renderMusic(){const qa=document.getElementById('musicQA');qa.innerHTML=MUSIC_QA.map((a,i)=>`<div class="qabtn" data-qa="${i}"><div class="ico">${svg(a.i)}</div><span>${a.t}</span></div>`).join('');qa.querySelectorAll('[data-qa]').forEach(b=>b.onclick=e=>{const a=MUSIC_QA[b.dataset.qa];logQuick(a.t,XP.quickAction,e);});renderMusicTasks();}
 
 function renderProgress(){
   const l=levelOf(S.totalExp),curRank=rankFor(l);
@@ -1782,7 +1789,7 @@ document.getElementById('moreSheet').addEventListener('click',e=>{if(e.target.id
 /* ============================================================
    PROJECTS (big achievements with sub-tasks)
    ============================================================ */
-const SUB_XP=15,PROJECT_XP=200;
+const SUB_XP=XP.sub,PROJECT_XP=XP.project;
 function addExpSilent(a){S.totalExp+=a;const t=todayStr();S.expByDate[t]=(S.expByDate[t]||0)+a;}
 function subRemoveExp(a){S.totalExp=Math.max(0,S.totalExp-a);const t=todayStr();S.expByDate[t]=Math.max(0,(S.expByDate[t]||0)-a);}
 const PROJ_COMPLIMENTS=['אגדה. ממש.','חיה רעה 🔥','זה ביג. תהיה גאה.','תותח על 💪','אין עליך.','עשית היסטוריה.'];
