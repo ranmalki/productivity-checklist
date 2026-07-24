@@ -40,6 +40,20 @@ enhance in tested increments, never ship a broken tree.
 - [x] Full-width gold-emblem header title up to the action buttons.
 - [x] Smoke-tested in headless Chromium: title = "Ran Hub", splash hides, nav renders, no app JS errors (only sandbox font fetch fails, which the SW handles gracefully online).
 
+## Redesign v3 — UX-critique implementation (declutter + IA + palette)
+
+Acted on the full design critique:
+- [x] **New palette** — cool near-black neutrals (charcoal surfaces) + a single calm **periwinkle-indigo accent** (`--accent #6d7cff`); muted semantic hues for categories. One accent used with restraint (CTAs, active nav, progress, completion).
+- [x] **Typography** — modern **system-ui stack** (SF/Segoe/Roboto) replacing Arial; tighter heading weights.
+- [x] **Removed the AI push bar from the chrome** → relocated to More ("AI · דחיפת שינויים") with its own input.
+- [x] **Lighter top** — dropped the duplicate header level-badge + XP bar; header is now date + centered logo + settings/mute only.
+- [x] **One progress indicator** — hero collapsed from 3 bars to a single level bar + a rank label + one compact stat row (streak/EXP/done); removed the duplicate "EXP TODAY".
+- [x] **Nav → 4 + More** — Home · Tasks · Progress · Rewards · More; Projects/Calendar/Training/Notepad/History/Music/Check-in/Smoke/AI moved into a scrollable More sheet.
+- [x] **Borderless, elevated cards** — hairline borders → subtle fill + soft shadow, more padding, 8pt rhythm; muted the candy tag chips to tinted-bg + colored-text.
+- [x] **Less density** — removed the redundant "next step" 3-card block; moved the wellbeing cards (smoking/avoid + wins) off Home onto the daily Check-in screen. Home is now Quest → Progress → Modes → Missions.
+- [x] Consistent neutral checkboxes; refined toggles; snappier press feedback.
+- Verified with Pixel-7 screenshots + full QA regression (green). Note: wellbeing tracking now lives under More → Check-in (a discoverability trade-off for a calmer Home).
+
 ## Redesign v2 — neutral / sleek / modern (per user direction)
 
 Pivoted away from the cosmic-pixel look toward a **neutral, modern app** aesthetic:
