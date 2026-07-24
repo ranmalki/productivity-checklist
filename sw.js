@@ -1,6 +1,6 @@
 /* Ran Hub service worker — app-shell cache + offline fallback.
    Bump CACHE version whenever the shipped assets change. */
-const CACHE = 'ranhub-v1';
+const CACHE = 'ranhub-v3';
 const SHELL = [
   './',
   './index.html',

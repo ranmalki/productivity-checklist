@@ -40,6 +40,44 @@ enhance in tested increments, never ship a broken tree.
 - [x] Full-width gold-emblem header title up to the action buttons.
 - [x] Smoke-tested in headless Chromium: title = "Ran Hub", splash hides, nav renders, no app JS errors (only sandbox font fetch fails, which the SW handles gracefully online).
 
+## Redesign v3 — UX-critique implementation (declutter + IA + palette)
+
+Acted on the full design critique:
+- [x] **New palette** — cool near-black neutrals (charcoal surfaces) + a single calm **periwinkle-indigo accent** (`--accent #6d7cff`); muted semantic hues for categories. One accent used with restraint (CTAs, active nav, progress, completion).
+- [x] **Typography** — modern **system-ui stack** (SF/Segoe/Roboto) replacing Arial; tighter heading weights.
+- [x] **Removed the AI push bar from the chrome** → relocated to More ("AI · דחיפת שינויים") with its own input.
+- [x] **Lighter top** — dropped the duplicate header level-badge + XP bar; header is now date + centered logo + settings/mute only.
+- [x] **One progress indicator** — hero collapsed from 3 bars to a single level bar + a rank label + one compact stat row (streak/EXP/done); removed the duplicate "EXP TODAY".
+- [x] **Nav → 4 + More** — Home · Tasks · Progress · Rewards · More; Projects/Calendar/Training/Notepad/History/Music/Check-in/Smoke/AI moved into a scrollable More sheet.
+- [x] **Borderless, elevated cards** — hairline borders → subtle fill + soft shadow, more padding, 8pt rhythm; muted the candy tag chips to tinted-bg + colored-text.
+- [x] **Less density** — removed the redundant "next step" 3-card block; moved the wellbeing cards (smoking/avoid + wins) off Home onto the daily Check-in screen. Home is now Quest → Progress → Modes → Missions.
+- [x] Consistent neutral checkboxes; refined toggles; snappier press feedback.
+- Verified with Pixel-7 screenshots + full QA regression (green). Note: wellbeing tracking now lives under More → Check-in (a discoverability trade-off for a calmer Home).
+
+## Redesign v2 — neutral / sleek / modern (per user direction)
+
+Pivoted away from the cosmic-pixel look toward a **neutral, modern app** aesthetic:
+- [x] **Palette** — charcoal/graphite dark neutral (near-black bg, dark panels, hairline white borders, soft shadows). Pulled the purple accent back to CTAs / active nav / progress / LVL badge only; neutralized card borders, stat cards, quest card (now a subtle accent stripe), and the date.
+- [x] **Font** — dropped all web/pixel fonts; **Arial** system stack across the app (also removes the Google Fonts network dependency).
+- [x] **Header** — removed the "RAN HUB" wordmark; the logo photo is now centered on its own.
+- [x] **Sounds** — replaced the 8-bit square/saw beeps with **smooth Duolingo-style tones**: soft sine+triangle plucks through a low-pass, pleasant major-interval rises for complete / quick / streak / level / rank (rewritten `chime()` engine).
+- [x] **Haptics** — `haptic()` helper + `navigator.vibrate` taps on completion, toggles, and celebration patterns (best-effort; Android Chrome supports it, iOS Safari ignores).
+- [x] **Motion** — staggered card entrances, smoother view fade, press-scale micro-interactions, and a **swipe-down-to-dismiss** gesture on modal sheets.
+- [x] Neutralized the launch splash (logo only, no wordmark).
+- Verified with Pixel-7 screenshots + full QA regression (green). Sound feel is best judged on-device.
+
+## Visual redesign pass (dark cosmic-jungle theme) — superseded by v2 above
+
+- [x] **Theme flip** — from washed-out translucent-light glass over a busy graffiti photo to **solid dark cosmic panels** on a designed CSS gradient (deep indigo → purple with a warm magenta/orange horizon glow, echoing the icon sky) + a subtle CSS starfield. Removed the 314KB `bg.jpg` entirely (SW cache → v3). Result reads as "order, not chaos" with strong contrast.
+- [x] **Logo** — replaced the procedural pixel-sword badge with the actual cosmic-jungle "R" artwork (`icons/icon-192.png`) in a glowing framed badge.
+- [x] **Wordmark** — dropped the gaudy heavy-stroke gold "RAN" + red «HUB» ribbon for a clean modern gold "RAN" / cyan "HUB".
+- [x] **Typography** — swapped the dated pixel fonts (Pixelify Sans, Press Start 2P) for **Rubik** (modern geometric sans, full Hebrew); kept tiny Silkscreen HUD labels as a subtle retro nod. Bumped base size 16 → 17.5px.
+- [x] **Token-driven** — the whole flip runs through `:root` (ink→light, cards→dark, borders/inputs/segments retuned), so every view inherited it. Verified with Pixel-7-sized screenshots across home, active quest, tasks, and the task modal; full QA regression still green.
+
+## Status: revamp roadmap complete
+
+All planned increments (#1–#6) and the cross-cutting spec areas (§17 return, §18 completion feedback, §19 performance, §20 accessibility, §21 data safety, §22 install, Phase 7 support systems) are implemented, headless-tested, committed, and deployed to the branch preview. Remaining known non-goals: weekly task repeat (deferred), a deep global CSS-token rewrite (intentionally skipped for regression safety), and a formal contrast audit. On-device (Pixel 7 / iOS) verification is the outstanding manual step before merge to production.
+
 ## Migration / risk notes
 
 - **No storage-key change.** Still `ttg_v2`; all existing user data loads unchanged. Any new fields will be added via `defaultState()` merge (non-destructive) — never rename/drop existing fields.
@@ -50,10 +88,43 @@ enhance in tested increments, never ship a broken tree.
 
 1. ~~**Reward Vault**~~ ✅ shipped — `S.rewards[]` (title, emoji, condition type xp/streak/smoke/manual, target, base, repeatable, status). Vault view under More, grouped Ready / In-progress / Claimed, progress bars, add-form, stronger unlock celebration. Additive state (merges over old saves).
 2. ~~**Timed smoke-free sessions**~~ ✅ shipped — `S.smoke{active,sessions[]}`. Live HH:MM:SS timer, duration picker, craving log, stats (total clean hours / sessions / best), neutral language, completion celebration. Feeds the `smoke` reward condition. Existing daily `cigs[]` untouched.
-3. **Daily Quest alignment flow** — quick guided picker: review unfinished → pick main quest / side quests / minimum action / reward → confirm. Framed on Home.
-4. **Task attribute expansion** — priority, effort, energy, due/time, repeat, reward link; clearer visual hierarchy (main / side / bonus / minimum / deferred).
-5. **Centralized XP config + duplicate-award guard** — single `XP` table; completion transaction IDs so toggling can't farm XP.
-6. **Design-token pass** — consolidate spacing/radius/elevation/z-index tokens for the "order, not chaos" grid.
+3. ~~**Daily Quest alignment flow**~~ ✅ shipped — `S.quest{date,mainId,sideIds[],minId,rewardId,setAt}`. Home-top quest card (empty → "build" CTA; active → main/side/minimum slots, live progress `done/total`, optional linked reward, done-state celebration). Guided builder modal (radio main + minimum, multi side, optional reward from Vault). Completion routes through existing `completeTask`/`uncompleteTask` so XP/streak stay single-source. Additive state (date-scoped; stale automatically next day).
+4. ~~**Task attribute expansion**~~ ✅ shipped — tasks gain optional `priority` (high/normal/low), `due` (date), `energy` (low/med/high), `repeat` (daily/once). Non-destructive: `normalizeTasks()` fills defaults for any legacy task on load. Editor modal gets priority/due/repeat/energy controls. Rows show meta badges (due w/ overdue state, once, high-priority, low-energy) + priority accent, and every list is `sortTasks()`-ordered (undone → priority → due). One-off (`once`) tasks completed on a day are archived (already in the log) and retired at rollover. Weekly repeat deferred (needs per-task rest tracking). Reward-link lives on the Daily Quest for now.
+5. ~~**Centralized XP config + duplicate-award guard**~~ ✅ shipped — single `XP` table (`quickAction`/`sub`/`project`) now feeds music quick-actions and the project constants (`SUB_XP`/`PROJECT_XP`). Duplicate-award guard verified (re-toggle 0→30→0, no double-award; `doneToday` gate). Also added the **floating "+N XP"** completion primitive (rises from the tapped element, 1000ms, reduced-motion aware, self-cleaning) — the plan's outstanding "floating +XP near item" feedback item.
+6. ~~**Design-token pass**~~ ✅ shipped (safe scope) — added a documented spacing scale (`--s1..--s6`) and a z-index tier system (`--z-bg…--z-splash`) to `:root`, and adopted the z-index tokens across every global stacking layer (bg, grain, header, nav, fx, toast, modal, quiz, level-up, splash) with **identical numeric values** (verified: zero visual change). A deeper global rewrite of the hundreds of existing rules was intentionally skipped — high regression risk on the working UI for no user-visible gain.
+
+## Support systems (Phase 7) — shipped
+
+- [x] **Rest / low-energy mode** — a Home toggle (`S.rest`) that narrows the day to low-energy tasks + the Daily Quest minimum, with calm, non-judgmental copy and an SR announcement. Builds on the task `energy` attribute. Reward Vault, smoke-free sessions, and Music/Studio mode were delivered earlier; the low-energy recovery flow completes the phase.
+
+## Performance (§19) — shipped
+
+- [x] **HTML payload trim** — the cosmic-jungle backdrop (~320KB JPEG) was inlined as a base64 data-URI; externalized to `bg.jpg` and referenced via `url('bg.jpg')`. `index.html` 609KB → 180KB (−70%), faster first paint + parse. Added `bg.jpg` to the SW precache (cache `v1`→`v2`) so offline keeps the backdrop.
+
+## Final QA sweep (headless Chromium) — all green
+
+- [x] Legacy `ttg_v2` (pre-revamp shape) migrates: tasks backfill priority/repeat/energy/due; XP/streak/log preserved.
+- [x] All 11 secondary views + Home render with no JS errors.
+- [x] Task create w/ attributes, Daily Quest build→complete, export download (`ran-hub-backup-<date>.json`), reduced-motion completion — all pass.
+- [x] Modal dialog semantics + focus trap/return + Escape.
+- [x] z-index tokens resolve to expected values; `bg.jpg` decodes (941×1672).
+
+## Return experience (§17) — shipped
+
+- [x] **Welcome-back states** — `S.lastVisit` tracks the last open; `computeVisitGap()` derives days away at load. Same-day → nothing. 1-day gap → compact time-of-day greeting + "continue where you left off" (or a "build daily quest" CTA). 2+ day gap → a gentle, shame-free welcome card ("everything's saved") with a 7-day recap (tasks + XP) and a fresh-Daily-Quest CTA. Dismissible; shows once per load. Verified for 0/1/3-day gaps.
+
+## Accessibility (§20) — first pass
+
+- [x] **Status announcements** — an `aria-live="polite"` visually-hidden region (`#sr`) announces completion ("+N XP, total today …") and level/rank-ups for screen readers, via `announce()` from `awardExp`.
+- [x] **Keyboard operability** — a `kbd()` helper gives the primary interactive surfaces (task checkboxes, Daily-Quest slots, quest-builder picker rows) `role="button"`, `tabindex`, `aria-label`, and Enter/Space activation. Verified: Tab-focus + Enter completes a task and announces it.
+- [x] Reduced-motion already respected globally + in the new floating-XP/welcome animations.
+- Remaining: focus trap/return for modals, full sweep of legacy div-buttons, contrast audit.
+
+## Also shipped this pass
+
+- [x] **Data safety (§21)** — Export backup (`ran-hub-backup-YYYY-MM-DD.json`) and Import/restore in Settings. Import validates JSON shape (`tasks` array), confirms before replacing, merges over `defaultState()` (non-destructive), local-only (no upload).
+- [x] **Install experience (§22)** — captures `beforeinstallprompt`, shows a header install button, triggers the native prompt on intent, hides on `appinstalled`/standalone; iOS Safari falls back to an "Add to Home Screen" hint (no fake Android prompt). `display-mode: standalone` detection.
+- [x] Headless-tested (Chromium): quest build→save→complete→uncomplete flow, EXP 0→30→0, progress `1/2`, export/import present, no app JS errors (only the sandbox cross-origin font fetch, which the SW handles online).
 
 ## Testing checklist
 
