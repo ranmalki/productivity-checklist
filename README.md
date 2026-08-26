@@ -17,5 +17,12 @@ git push
 
 The production URL updates on its own within seconds.
 
+## Also in this repo
+
+- **`tel-aviv-rpg/`** — *TLV*, a self-contained top-down pixel-art Tel Aviv
+  walkabout prototype (generated city, day/night cycle, a short quest chain).
+  Open `tel-aviv-rpg/index.html` locally, or `/tel-aviv-rpg/` on the live site.
+  See [`tel-aviv-rpg/README.md`](tel-aviv-rpg/README.md).
+
 <!-- Auto-deploy connected and verified. -->
 

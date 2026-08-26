@@ -1,6 +1,6 @@
 /* Ran Hub service worker — app-shell cache + offline fallback.
    Bump CACHE version whenever the shipped assets change. */
-const CACHE = 'ranhub-v1';
+const CACHE = 'ranhub-v2';
 const SHELL = [
   './',
   './index.html',
@@ -10,7 +10,9 @@ const SHELL = [
   './icons/icon-512.png',
   './icons/icon-192-maskable.png',
   './icons/icon-512-maskable.png',
-  './icons/apple-touch-icon.png'
+  './icons/apple-touch-icon.png',
+  './tel-aviv-rpg/',
+  './tel-aviv-rpg/index.html'
 ];
 
 self.addEventListener('install', (e) => {
@@ -43,11 +45,15 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(req)
         .then((res) => {
+          // Key each page by its own URL — otherwise a sub-page (e.g. the RPG)
+          // would overwrite the cached hub shell and get served in its place offline.
           const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('./index.html', copy));
+          caches.open(CACHE).then((c) => c.put(req, copy));
           return res;
         })
-        .catch(() => caches.match('./index.html').then((r) => r || caches.match('./')))
+        .catch(() => caches.match(req)
+          .then((r) => r || caches.match('./index.html'))
+          .then((r) => r || caches.match('./')))
     );
     return;
   }
